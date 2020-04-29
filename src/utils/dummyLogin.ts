@@ -1,37 +1,37 @@
-import Role from '@/utils/role';
 
 const exampleUser = [
   {
     email: 'admin@lucky.com',
     name: '高贵的管理员',
-    role: Role.ADMIN,
+    role: 0,
     password: 'admin',
     token: Math.random().toString(36).replace(/[^a-z]+/g, ''),
   },
   {
     email: 'hr@lucky.com',
     name: '我是HR',
-    role: Role.HR,
+    role: 1,
     password: 'hr',
     token: Math.random().toString(36).replace(/[^a-z]+/g, ''),
   },
   {
     email: 'hr2@lucky.com',
     name: '我也是HR',
-    role: Role.HR,
+    role: 1,
     password: 'hr',
     token: Math.random().toString(36).replace(/[^a-z]+/g, ''),
   },
   {
     email: 'interviewer@lucky.com',
     name: '面试官苦力',
-    role: Role.INTERVIEWER,
+    role: 2,
     password: 'interviewer',
     token: Math.random().toString(36).replace(/[^a-z]+/g, ''),
   },
 ];
 
-export default (email: string, password: string) => {
+export default async (email: string, password: string) => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   const targetUser = exampleUser.find((user) => (user.email === email));
   if (targetUser === undefined) {
     return Promise.reject(new Error('找不到该账户'));

@@ -39,10 +39,12 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn color="primary" @click="onLogin">登录</v-btn>
+                <v-btn color="primary" @click="onLogin" :loading="loading"
+                  >登录</v-btn
+                >
               </v-card-actions>
             </v-card>
-            <v-alert type="error" v-if="getError !== ''" dismissible="true">
+            <v-alert type="error" v-if="getError !== ''" :dismissible="true">
               {{ getError }}
             </v-alert>
           </v-col>
@@ -59,10 +61,11 @@ import { mapGetters, mapMutations, mapActions } from 'vuex';
 export default Vue.extend({
   name: 'Home',
   computed: {
-    ...mapGetters(['getError']),
+    ...mapGetters(['logged', 'getError']),
   },
   data() {
     return {
+      loading: false,
       showPassword: false,
       email: '',
       password: '',
@@ -73,6 +76,7 @@ export default Vue.extend({
     ...mapActions(['login']),
     onLogin() {
       this.clearError();
+      this.loading = true;
       this.login({
         email: this.email,
         password: this.password,
@@ -84,6 +88,11 @@ export default Vue.extend({
           this.setError(error.message);
         });
     },
+  },
+  created() {
+    if (this.logged) {
+      this.$router.push({ path: '/console' });
+    }
   },
 });
 </script>
