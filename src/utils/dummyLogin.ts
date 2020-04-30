@@ -31,7 +31,7 @@ const exampleUser = [
 ];
 
 export default async (email: string, password: string) => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 500));
   const targetUser = exampleUser.find((user) => (user.email === email));
   if (targetUser === undefined) {
     return Promise.reject(new Error('找不到该账户'));

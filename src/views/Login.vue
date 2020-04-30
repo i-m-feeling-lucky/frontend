@@ -59,7 +59,7 @@ import Vue from 'vue';
 import { mapGetters, mapMutations, mapActions } from 'vuex';
 
 export default Vue.extend({
-  name: 'Home',
+  name: 'Login',
   computed: {
     ...mapGetters(['logged', 'getError']),
   },
@@ -86,6 +86,9 @@ export default Vue.extend({
         })
         .catch((error) => {
           this.setError(error.message);
+        })
+        .finally(() => {
+          this.loading = false;
         });
     },
   },

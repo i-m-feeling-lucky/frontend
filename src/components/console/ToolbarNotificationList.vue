@@ -1,11 +1,5 @@
 <template>
   <v-card class="elevation-0">
-    <v-app-bar text dense color="transparent" elevation="0">
-      <v-toolbar-title>
-        <h4>通知</h4>
-      </v-toolbar-title>
-    </v-app-bar>
-    <v-divider></v-divider>
     <v-card-text class="pa-0">
       <v-list two-line class="pa-0">
         <template v-for="(item, index) in items">
@@ -32,6 +26,7 @@
 
 <script>
 export default {
+  name: 'ToolbarNotificationList',
   data() {
     return {
       items: [

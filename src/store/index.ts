@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from 'axios';
 import dummyLogin from '@/utils/dummyLogin';
-
+import roleMap from '@/utils/roleMap';
 
 Vue.use(Vuex);
 
@@ -26,6 +26,9 @@ export default new Vuex.Store({
     },
     getUser(state) {
       return state.user;
+    },
+    getUserRoleString(state) {
+      return roleMap[state.user.role];
     },
     getError(state) {
       return state.error;
