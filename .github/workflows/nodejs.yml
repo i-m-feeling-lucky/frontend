@@ -27,4 +27,15 @@ jobs:
     - run: npm install
     - run: npm run build
     # - run: npm test
-    # currently not run test since we have not worked on it
+    # TODO currently not run test since we have not worked on it
+    - name: Deploy to server
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        TARGET_DIR: ${{ secrets.TARGET_DIR }}
+      run: |
+        SSH_PATH="$HOME/.ssh"
+        mkdir "$SSH_PATH"
+        echo $TARGET_DIR
+        echo "$SSH_PRIVATE_KEY" > "$SSH_PATH/id_rsa"
+        chmod 600 "$SSH_PATH/id_rsa"
+        rsync -az --delete -e "ssh -i $SSH_PATH/id_rsa" ./dist/ "github@yusanshi.com:$TARGET_DIR"
