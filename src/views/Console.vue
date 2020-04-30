@@ -108,7 +108,7 @@ export default Vue.extend({
           {
             icon: 'mdi-account-box-multiple',
             text: '用户管理',
-            model: true,
+            model: false,
             children: [
               { icon: 'mdi-duck', text: 'HR', to: '/console/user-management/HR' },
               { icon: 'mdi-duck', text: '面试官', to: '/console/user-management/interviewer' },
@@ -147,7 +147,7 @@ export default Vue.extend({
           {
             icon: 'mdi-account-box-multiple',
             text: '用户管理',
-            model: true,
+            model: false,
             children: [
               { icon: 'mdi-duck', text: '面试官', to: '/console/user-management/interviewer' },
               { icon: 'mdi-duck', text: '候选人', to: '/console/user-management/interviewee' },
@@ -156,7 +156,7 @@ export default Vue.extend({
           {
             icon: 'mdi-duck',
             text: '面试管理',
-            model: true,
+            model: false,
             children: [
               { icon: 'mdi-ray-start', text: '未开始', to: '/console/interview-management/upcoming' },
               { icon: 'mdi-ray-vertex', text: '正在进行', to: '/console/interview-management/active' },
@@ -190,7 +190,7 @@ export default Vue.extend({
           {
             icon: 'mdi-duck',
             text: '面试管理',
-            model: true,
+            model: false,
             children: [
               { icon: 'mdi-ray-start', text: '未开始', to: '/console/interview-management/upcoming' },
               { icon: 'mdi-ray-vertex', text: '正在进行', to: '/console/interview-management/active' },
