@@ -24,7 +24,7 @@ const routes: Array<RouteConfig> = [
       },
       {
         path: 'user-management/HR',
-        component: () => import(/* webpackChunkName: "console" */ '@/components/console/admin/UserManagementHR.vue'),
+        component: () => import(/* webpackChunkName: "console-admin" */ '@/components/console/admin/UserManagementHR.vue'),
       },
       {
         path: 'user-management/interviewer',
@@ -44,11 +44,11 @@ const routes: Array<RouteConfig> = [
       },
       {
         path: 'interview-management/ended',
-        component: () => import(/* webpackChunkName: "console" */ '@/components/console/HR/InterviewManagementEnded.vue'),
+        component: () => import(/* webpackChunkName: "console-HR" */ '@/components/console/HR/InterviewManagementEnded.vue'),
       },
       {
         path: 'problem-management',
-        component: () => import(/* webpackChunkName: "console" */ '@/components/console/admin/ProblemManagement.vue'),
+        component: () => import(/* webpackChunkName: "console-admin" */ '@/components/console/admin/ProblemManagement.vue'),
       },
       {
         path: 'notification',
@@ -64,7 +64,7 @@ const routes: Array<RouteConfig> = [
       },
       {
         path: 'free-time',
-        component: () => import(/* webpackChunkName: "console" */ '@/components/console/interviewer/ChangeFreeTime.vue'),
+        component: () => import(/* webpackChunkName: "console-interviewer" */ '@/components/console/interviewer/ChangeFreeTime.vue'),
       },
     ],
   },
