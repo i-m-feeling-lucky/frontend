@@ -35,7 +35,7 @@ jobs:
       run: |
         SSH_PATH="$HOME/.ssh"
         mkdir "$SSH_PATH"
-        echo $TARGET_DIR
         echo "$SSH_PRIVATE_KEY" > "$SSH_PATH/id_rsa"
         chmod 600 "$SSH_PATH/id_rsa"
+        ssh-keyscan yusanshi.com >> "$SSH_PATH/known_hosts"
         rsync -az --delete -e "ssh -i $SSH_PATH/id_rsa" ./dist/ "github@yusanshi.com:$TARGET_DIR"
