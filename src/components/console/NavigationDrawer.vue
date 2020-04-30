@@ -22,7 +22,13 @@
               </v-list-item-title>
             </v-list-item-content>
           </template>
-          <v-list-item v-for="(child, index) in item.children" :key="index" :to="child.to" link>
+          <v-list-item
+            v-for="(child, index) in item.children"
+            :key="index"
+            :to="child.to"
+            exact
+            link
+          >
             <v-list-item-action v-if="child.icon">
               <v-icon>{{ child.icon }}</v-icon>
             </v-list-item-action>
@@ -33,7 +39,13 @@
             </v-list-item-content>
           </v-list-item>
         </v-list-group>
-        <v-list-item v-else :key="item.text" :to="item.to" link>
+        <v-list-item
+          v-else
+          :key="item.text"
+          :to="item.to"
+          exact
+          link
+        >
           <v-list-item-action>
             <v-icon>{{ item.icon }}</v-icon>
           </v-list-item-action>
