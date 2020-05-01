@@ -70,7 +70,7 @@ const routes: Array<RouteConfig> = [
   },
   {
     path: '/interview/:id(\\d+)', // Matched only if :id is all numbers
-    component: () => import(/* webpackChunkName: "interview" */ '../views/Interview.vue'),
+    component: () => import(/* webpackChunkName: "interview" */ '@/views/Interview.vue'),
   },
 ];
 

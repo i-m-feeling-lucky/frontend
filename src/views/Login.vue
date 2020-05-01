@@ -5,11 +5,12 @@
         <v-row align="center" justify="center">
           <v-col cols="12" sm="8" md="4">
             <v-alert icon="mdi-duck">
-              测试用户 [ { email: 'admin@lucky.com', name: '高贵的管理员',
-              password: 'admin', }, { email: 'hr@lucky.com', name: '我是HR',
-              password: 'hr', }, { email: 'hr2@lucky.com', name: '我也是HR',
-              password: 'hr', }, { email: 'interviewer@lucky.com', name:
-              '面试官苦力', password: 'interviewer', }, ]
+              测试用户<br />
+              [ { email: 'admin@lucky.com', name: '高贵的管理员', password:
+              'admin', }, { email: 'hr@lucky.com', name: '我是HR', password:
+              'hr', }, { email: 'hr2@lucky.com', name: '我也是HR', password:
+              'hr', }, { email: 'interviewer@lucky.com', name: '面试官苦力',
+              password: 'interviewer', }, ]
             </v-alert>
             <v-card class="elevation-12 mb-6">
               <v-toolbar color="primary" dark flat>

@@ -1,5 +1,6 @@
+/* eslint-disable import/prefer-default-export */
 
-const exampleUser = [
+const users = [
   {
     email: 'admin@lucky.com',
     name: '高贵的管理员',
@@ -30,9 +31,9 @@ const exampleUser = [
   },
 ];
 
-export default async (email: string, password: string) => {
+export async function dummyLogin(email: string, password: string) {
   await new Promise((resolve) => setTimeout(resolve, 500));
-  const targetUser = exampleUser.find((user) => (user.email === email));
+  const targetUser = users.find((user) => (user.email === email));
   if (targetUser === undefined) {
     return Promise.reject(new Error('找不到该账户'));
   }
@@ -46,4 +47,4 @@ export default async (email: string, password: string) => {
     });
   }
   return Promise.reject(new Error('密码错误'));
-};
+}
