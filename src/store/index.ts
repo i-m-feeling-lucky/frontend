@@ -6,7 +6,7 @@ import roleMap from '@/utils/roleMap';
 
 Vue.use(Vuex);
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = process.env.VUE_APP_API_URL;
 
 const userString = localStorage.getItem('user');
 export default new Vuex.Store({
