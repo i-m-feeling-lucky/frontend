@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from 'axios';
-import dummyLogin from '@/utils/dummyLogin';
+import { dummyLogin } from '@/utils/dummyUser';
 import roleMap from '@/utils/roleMap';
 
 Vue.use(Vuex);
@@ -19,6 +19,7 @@ export default new Vuex.Store({
         token: null,
       },
     error: '',
+    info: '',
   },
   getters: {
     logged(state) {
@@ -33,6 +34,9 @@ export default new Vuex.Store({
     getError(state) {
       return state.error;
     },
+    getInfo(state) {
+      return state.info;
+    },
   },
   mutations: {
     setUser(state, payload) {
@@ -43,6 +47,12 @@ export default new Vuex.Store({
     },
     setError(state, payload) {
       state.error = payload;
+    },
+    clearInfo(state) {
+      state.info = '';
+    },
+    setInfo(state, payload) {
+      state.info = payload;
     },
   },
   actions: {
