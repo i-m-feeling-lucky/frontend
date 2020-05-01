@@ -1,8 +1,8 @@
-name: Node.js CI/CD
+name: Node.js CI/CD test
 
 on:
   push:
-    branches: master
+    branches: test
 
 jobs:
   build:
@@ -23,11 +23,11 @@ jobs:
     - name: Deploy to server
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        TARGET_DIR: ${{ secrets.TARGET_DIR }}
+        TARGET_DIR_TEST: ${{ secrets.TARGET_DIR_TEST }}
       run: |
         SSH_PATH="$HOME/.ssh"
         mkdir "$SSH_PATH"
         echo "$SSH_PRIVATE_KEY" > "$SSH_PATH/id_rsa"
         chmod 600 "$SSH_PATH/id_rsa"
         ssh-keyscan yusanshi.com >> "$SSH_PATH/known_hosts"
-        rsync -az --delete -e "ssh -i $SSH_PATH/id_rsa" ./dist/ "github@yusanshi.com:$TARGET_DIR"
+        rsync -az --delete -e "ssh -i $SSH_PATH/id_rsa" ./dist/ "github@yusanshi.com:$TARGET_DIR_TEST"
