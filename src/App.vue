@@ -60,6 +60,17 @@ export default Vue.extend({
       }
     },
 
+    getSuccess(val) {
+      if (val !== '') {
+        this.successSnackbar = true;
+      }
+    },
+    successSnackbar(val) {
+      if (!val) {
+        this.setSuccess('');
+      }
+    },
+
     getError(val) {
       if (val !== '') {
         this.errorSnackbar = true;
