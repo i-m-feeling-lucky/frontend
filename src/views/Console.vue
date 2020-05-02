@@ -66,10 +66,6 @@
     </v-app-bar>
     <v-content>
       <v-container fluid>
-        <!-- TODO -->
-        <v-alert type="error" v-if="getError !== ''">
-          {{ getError }}
-        </v-alert>
         <router-view></router-view>
       </v-container>
     </v-content>

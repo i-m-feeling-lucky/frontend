@@ -45,9 +45,6 @@
                 >
               </v-card-actions>
             </v-card>
-            <v-alert type="error" v-if="getError !== ''" :dismissible="true">
-              {{ getError }}
-            </v-alert>
           </v-col>
         </v-row>
       </v-container>
@@ -73,10 +70,9 @@ export default Vue.extend({
     };
   },
   methods: {
-    ...mapMutations(['clearError', 'setError']),
+    ...mapMutations(['setError']),
     ...mapActions(['login']),
     onLogin() {
-      this.clearError();
       this.loading = true;
       this.login({
         email: this.email,
