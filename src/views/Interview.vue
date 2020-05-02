@@ -35,12 +35,6 @@
             >9664eb59-5fff-40a9-ad66-1936d9d06ec6</a
           >', startTime: Date.now() + 1000 * 60 * 2, length: 40, }, ]
         </v-alert>
-        <v-alert type="error" v-if="getError !== ''">
-          {{ getError }}
-        </v-alert>
-        <v-alert type="info" v-if="getInfo !== ''">
-          {{ getInfo }}
-        </v-alert>
       </v-container>
     </v-content>
   </v-app>
@@ -66,33 +60,27 @@ export default Vue.extend({
   methods: {
     ...mapMutations(['setError', 'setInfo']),
     initialInterview(id: number, role: number) {
+      const connection = new RTCMultiConnection();
+      connection.socketURL = process.env.VUE_APP_RTC_SOCKET_URL;
+      connection.session = {
+        audio: true,
+        video: true,
+      };
+      window.connection = connection; // TODO for debug only
       if (roleMap[role] === 'HR') {
         this.setInfo('你是 HR，正在旁观中');
+        // TODO
+        connection.dontAttachStream = true;
+        connection.dontCaptureUserMedia = true;
+        connection.openOrJoin(id);
+        console.log(connection);
       } else if (roleMap[role] === 'interviewer') {
         this.setInfo('你是面试官，请面试');
-
-        const connection = new RTCMultiConnection();
-        connection.socketURL = process.env.VUE_APP_RTC_SOCKET_URL;
-
-        connection.session = {
-          audio: true,
-          video: true,
-        };
-
-        connection.openOrJoin(id); // TODO
+        connection.openOrJoin(id);
         console.log(connection);
       } else if (roleMap[role] === 'interviewee') {
         this.setInfo('你是候选人，请接受面试');
-
-        const connection = new RTCMultiConnection();
-        connection.socketURL = process.env.VUE_APP_RTC_SOCKET_URL;
-
-        connection.session = {
-          audio: true,
-          video: true,
-        };
-
-        connection.openOrJoin(id); // TODO
+        connection.openOrJoin(id);
         console.log(connection);
       } else {
         this.setError('系统错误！');

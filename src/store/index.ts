@@ -18,8 +18,9 @@ export default new Vuex.Store({
         role: null,
         token: null,
       },
-    error: '',
     info: '',
+    success: '',
+    error: '',
   },
   getters: {
     logged(state) {
@@ -31,29 +32,30 @@ export default new Vuex.Store({
     getUserRoleString(state) {
       return roleMap[state.user.role];
     },
-    getError(state) {
-      return state.error;
-    },
     getInfo(state) {
       return state.info;
+    },
+    getSuccess(state) {
+      return state.success;
+    },
+    getError(state) {
+      return state.error;
     },
   },
   mutations: {
     setUser(state, payload) {
       state.user = payload;
     },
-    clearError(state) {
-      state.error = '';
+    setInfo(state, payload) {
+      state.info = payload;
+    },
+    setSuccess(state, payload) {
+      state.success = payload;
     },
     setError(state, payload) {
       state.error = payload;
     },
-    clearInfo(state) {
-      state.info = '';
-    },
-    setInfo(state, payload) {
-      state.info = payload;
-    },
+
   },
   actions: {
     login({ commit }, payload) {
