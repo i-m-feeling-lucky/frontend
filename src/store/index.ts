@@ -60,13 +60,11 @@ export default new Vuex.Store({
   actions: {
     login({ commit }, payload) {
       return new Promise((resolve, reject) => {
-        // axios.post(`${API_URL}/login`,
-        //   {
-        //     email: payload.email,
-        //     password: payload.password
-        //   }
-        // )
-        dummyLogin(payload.email, payload.password)
+        axios.post(`${API_URL}/login`,
+          {
+            email: payload.email,
+            password: payload.password,
+          })
           .then((response) => {
             const user = {
               email: payload.email,
@@ -84,13 +82,11 @@ export default new Vuex.Store({
     },
     logout({ commit, getters }) {
       return new Promise((resolve, reject) => {
-        // axios.post(`${API_URL}/logout`,
-        //   {
-        //     // Also send the email to speedup query in db
-        //     email: getters('getUser').email,
-        //     token: getters('getUser').token,
-        //   })
-        Promise.resolve() // TODO replace with above axios
+        axios.post(`${API_URL}/logout`,
+          {
+            email: getters.getUser.email,
+            token: getters.getUser.token,
+          })
           .then(() => {
             commit('setUser', {
               email: null,
