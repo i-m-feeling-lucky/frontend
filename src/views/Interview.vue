@@ -66,7 +66,7 @@ export default Vue.extend({
         audio: true,
         video: true,
       };
-      window.connection = connection; // TODO for debug only
+      (window as any).connection = connection; // TODO for debug only
       if (roleMap[role] === 'HR') {
         this.setInfo('你是 HR，正在旁观中');
         // TODO
