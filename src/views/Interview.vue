@@ -47,7 +47,33 @@
                 ></div>
               </gl-component>
             </gl-row>
-            <gl-component>聊天</gl-component>
+            <gl-component
+              ><Chat
+                :participants="participants"
+                :myself="myself"
+                :messages="messages"
+                :placeholder="placeholder"
+                :colors="colors"
+                :border-style="borderStyle"
+                :hide-close-button="hideCloseButton"
+                :close-button-icon-size="closeButtonIconSize"
+                :submit-icon-size="submitIconSize"
+                :submit-image-icon-size="submitImageIconSize"
+                :load-more-messages="
+                  toLoad.length > 0 ? loadMoreMessages : null
+                "
+                :async-mode="asyncMode"
+                :scroll-bottom="scrollBottom"
+                :display-header="false"
+                :send-images="true"
+                :profile-picture-config="profilePictureConfig"
+                @onImageClicked="onImageClicked"
+                @onImageSelected="onImageSelected"
+                @onMessageSubmit="onMessageSubmit"
+                @onType="onType"
+              >
+              </Chat>
+            </gl-component>
           </gl-col>
         </gl-row>
       </golden-layout>
@@ -57,6 +83,8 @@
 
 <script lang="ts">
 /* eslint-disable max-len */
+/* eslint-disable no-param-reassign */
+/* eslint-disable global-require */
 import Vue from 'vue';
 import { mapGetters, mapMutations } from 'vuex';
 import RTCMultiConnection from 'rtcmulticonnection';
@@ -67,6 +95,8 @@ import 'codemirror/mode/javascript/javascript'; // TODO
 import 'codemirror/theme/base16-dark.css';
 import { codemirror } from 'vue-codemirror';
 import 'codemirror/lib/codemirror.css';
+import { Chat } from 'vue-quick-chat';
+import 'vue-quick-chat/dist/vue-quick-chat.css';
 
 window.io = io; // TODO
 
@@ -74,6 +104,7 @@ export default Vue.extend({
   name: 'Interview',
   components: {
     codemirror,
+    Chat,
   },
   data() {
     return {
@@ -84,6 +115,143 @@ export default Vue.extend({
         theme: 'base16-dark',
         lineNumbers: true,
         line: true,
+      },
+
+      // ID: interviewer: 0, interviewee: 1
+      participants: [
+        {
+          name: '虚假面试官',
+          id: 1,
+          profilePicture: require('@/assets/user.svg'),
+        },
+      ],
+      myself: {
+        name: '我', // TODO
+        id: 3,
+        profilePicture: require('@/assets/user.svg'),
+      },
+      messages: [
+        {
+          content: '你好啊f~',
+          myself: false,
+          participantId: 1,
+          timestamp: {
+            year: 2019,
+            month: 3,
+            day: 5,
+            hour: 20,
+            minute: 10,
+            second: 3,
+            millisecond: 123,
+          },
+          type: 'text',
+        },
+        {
+          content: 'sent messages',
+          myself: true,
+          participantId: 3,
+          timestamp: {
+            year: 2019,
+            month: 4,
+            day: 5,
+            hour: 19,
+            minute: 10,
+            second: 3,
+            millisecond: 123,
+          },
+          type: 'text',
+        },
+        {
+          content: 'other received messages',
+          myself: false,
+          participantId: 2,
+          timestamp: {
+            year: 2019,
+            month: 5,
+            day: 5,
+            hour: 10,
+            minute: 10,
+            second: 3,
+            millisecond: 123,
+          },
+          type: 'text',
+        },
+      ],
+      placeholder: '点击编辑你的消息',
+      colors: {
+        message: {
+          myself: {
+            bg: '#fff',
+            text: '#666',
+          },
+          others: {
+            bg: '#666',
+            text: '#fff',
+          },
+          messagesDisplay: {
+            bg: '#f7f3f3',
+          },
+        },
+        submitIcon: '#666',
+        submitImageIcon: '#666',
+      },
+      borderStyle: {
+        topLeft: '10px',
+        topRight: '10px',
+        bottomLeft: '10px',
+        bottomRight: '10px',
+      },
+      submitIconSize: 25,
+      closeButtonIconSize: '20px',
+      asyncMode: false,
+      toLoad: [
+        {
+          content: 'Hey, John Doe! How are you today?',
+          myself: false,
+          participantId: 2,
+          timestamp: {
+            year: 2011,
+            month: 3,
+            day: 5,
+            hour: 10,
+            minute: 10,
+            second: 3,
+            millisecond: 123,
+          },
+          uploaded: true,
+          viewed: true,
+          type: 'text',
+        },
+        {
+          content: "Hey, Adam! I'm feeling really fine this evening.",
+          myself: true,
+          participantId: 3,
+          timestamp: {
+            year: 2010,
+            month: 0,
+            day: 5,
+            hour: 19,
+            minute: 10,
+            second: 3,
+            millisecond: 123,
+          },
+          uploaded: true,
+          viewed: true,
+          type: 'text',
+        },
+      ],
+      scrollBottom: {
+        messageSent: true,
+        messageReceived: false,
+      },
+      profilePictureConfig: {
+        others: true,
+        myself: true,
+        styles: {
+          width: '30px',
+          height: '30px',
+          borderRadius: '50%',
+        },
       },
     };
   },
@@ -142,10 +310,10 @@ export default Vue.extend({
           } else if (event.type === 'remote') {
             if (event.extra.role === role) {
               if (event.extra.createdTime > connection.extra.createdTime) {
-                this.setInfo('您创建了新的链接，此连接断开。');
+                this.setInfo('您创建了新的连接，此连接断开。');
                 this.closeConnection(connection);
               } else {
-                this.setInfo('您打开了新链接，旧连接自动断开。');
+                this.setInfo('您打开了新连接，旧连接自动断开。');
               }
             } else if (roleMap[event.extra.role] === 'interviewee') {
               const targetElement = connection.videosContainer.interviewee;
@@ -168,10 +336,10 @@ export default Vue.extend({
           } else if (event.type === 'remote') {
             if (event.extra.role === role) {
               if (event.extra.createdTime > connection.extra.createdTime) {
-                this.setInfo('您创建了新的链接，此连接断开。');
+                this.setInfo('您创建了新的连接，此连接断开。');
                 this.closeConnection(connection);
               } else {
-                this.setInfo('您打开了新链接，旧连接自动断开。');
+                this.setInfo('您打开了新连接，旧连接自动断开。');
               }
             } else if (roleMap[event.extra.role] === 'interviewer') {
               const targetElement = connection.videosContainer.interviewer;
@@ -197,6 +365,57 @@ export default Vue.extend({
       });
       // close socket.io connection
       connection.closeSocket();
+    },
+    onType(event) {
+      // here you can set any behavior
+    },
+    loadMoreMessages(resolve) {
+      setTimeout(() => {
+        resolve(this.toLoad); // We end the loading state and add the messages
+        // Make sure the loaded messages are also added to our local messages copy or they will be lost
+        this.messages.unshift(...this.toLoad);
+        this.toLoad = [];
+      }, 1000);
+    },
+    onMessageSubmit(message) {
+      /*
+       * example simulating an upload callback.
+       * It's important to notice that even when your message wasn't send
+       * yet to the server you have to add the message into the array
+       */
+      this.messages.push(message);
+
+      /*
+       * you can update message state after the server response
+       */
+      // timeout simulating the request
+      setTimeout(() => {
+        message.uploaded = true;
+      }, 2000);
+    },
+    onImageSelected(files, message) {
+      const src = 'https://149364066.v2.pressablecdn.com/wp-content/uploads/2017/03/vue.jpg';
+      this.messages.push(message);
+      /**
+       * This timeout simulates a requisition that uploads the image file to the server.
+       * It's up to you implement the request and deal with the response in order to
+       * update the message status and the message URL
+       */
+      setTimeout(
+        (res) => {
+          message.uploaded = true;
+          message.src = res.src;
+        },
+        3000,
+        { src },
+      );
+    },
+    onImageClicked(message) {
+      /**
+       * This is the callback function that is going to be executed when some image is clicked.
+       * You can add your code here to do whatever you need with the image clicked. A common situation is to display the image clicked in full screen.
+       */
+      console.log('Image clicked', message.src);
     },
   },
 
