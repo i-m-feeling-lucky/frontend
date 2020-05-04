@@ -3,7 +3,7 @@
     <!-- TODO don't hard code the color -->
     <v-snackbar
       v-model="infoSnackbar"
-      :timeout="1000"
+      :timeout="2000"
       :top="true"
       color="#42A5F5"
     >
@@ -11,7 +11,7 @@
     </v-snackbar>
     <v-snackbar
       v-model="successSnackbar"
-      :timeout="1000"
+      :timeout="2000"
       :top="true"
       color="#43A047"
     >
@@ -19,7 +19,7 @@
     </v-snackbar>
     <v-snackbar
       v-model="errorSnackbar"
-      :timeout="1000"
+      :timeout="2000"
       :top="true"
       color="#EF5350"
     >
