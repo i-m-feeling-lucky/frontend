@@ -177,6 +177,7 @@ export default Vue.extend({
     ...mapMutations(['setError', 'setInfo']),
     initialInterview(id: number, role: number, password: string) {
       const connection = new RTCMultiConnection();
+      // TODO set enableLogs to false
       // TODO stun server
       this.connection = connection; // Assign into global space
       connection.socketURL = process.env.VUE_APP_RTC_SOCKET_URL;
@@ -197,7 +198,6 @@ export default Vue.extend({
       };
       connection.onmessage = (event: any) => {
         if (event.data.chat) {
-          console.log(event.data.chat);
           this.messages.push(
             Object.assign(event.data.chat, {
               uploaded: true,
@@ -218,7 +218,6 @@ export default Vue.extend({
         connection.dontCaptureUserMedia = true;
         // TODO currently HR can only get remote stream in the beginning
         connection.onstream = (event: any) => {
-          console.log(event);
           const videoElement = event.mediaElement;
           if (event.type === 'remote') {
             if (
@@ -231,11 +230,9 @@ export default Vue.extend({
           }
         };
         connection.openOrJoin(id.toString());
-        console.log(connection);
       } else if (roleMap[role] === 'interviewer') {
         this.setInfo('你是面试官，请面试');
         connection.onstream = (event: any) => {
-          console.log(event);
           const videoElement = event.mediaElement;
           if (event.type === 'local') {
             const targetElement = connection.videosContainer.interviewer;
@@ -257,11 +254,9 @@ export default Vue.extend({
           }
         };
         connection.openOrJoin(id.toString());
-        console.log(connection);
       } else if (roleMap[role] === 'interviewee') {
         this.setInfo('你是候选人，请接受面试');
         connection.onstream = (event: any) => {
-          console.log(event);
           const videoElement = event.mediaElement;
           if (event.type === 'local') {
             const targetElement = connection.videosContainer.interviewee;
@@ -283,7 +278,6 @@ export default Vue.extend({
           }
         };
         connection.openOrJoin(id.toString());
-        console.log(connection);
       } else {
         this.setError('系统错误！');
       }
@@ -302,13 +296,8 @@ export default Vue.extend({
     },
 
     onMessageSubmit(message: any) {
-      console.log(message);
       if (message.content.trim() === '') {
         this.setError('不能发送空消息');
-        return;
-      }
-      if (roleMap[this.role] === 'HR') {
-        this.setError('您只能旁观，不能发送信息');
         return;
       }
       if (this.connection === null) {
@@ -327,7 +316,14 @@ export default Vue.extend({
       }, 2000);
     },
     onImageSelected({ file, message }: any) {
-      console.log(message);
+      if (this.connection === null) {
+        this.setError('未建立连接，信息无法发送！');
+        return;
+      }
+      if (this.connection.socket === null) {
+        this.setError('连接已断开，信息无法发送！请在新打开的窗口中执行操作！');
+        return;
+      }
       // TODO use img.yusanshi.com/upload.php
       toBase64(file)
         .then((base64) => {
