@@ -7,29 +7,7 @@
             <gl-component
               ><codemirror v-model="code" :options="cmOptions" />
             </gl-component>
-            <gl-component
-              >测试房间<br />
-              [ { id: 0, HRId: 1, interviewerId: 12, intervieweeId: 18, HRToken:
-              '<a href="0?token=1f251805-b4ea-43a3-90a8-299abeb751e8"
-                >1f251805-b4ea-43a3-90a8-299abeb751e8</a
-              >', interviewerToken: '<a
-                href="0?token=60cd9fda-c9b6-4670-b5a5-f6fdb7f9ef6a"
-                >60cd9fda-c9b6-4670-b5a5-f6fdb7f9ef6a</a
-              >', intervieweeToken: '<a
-                href="0?token=563455cd-3111-42e6-9a2a-8f344dd887de"
-                >563455cd-3111-42e6-9a2a-8f344dd887de</a
-              >', startTime: Date.now() + 1000 * 60 * 24, length: 40, }, { id:
-              1, HRId: 2, interviewerId: 8, intervieweeId: 4, HRToken: '<a
-                href="1?token=7e4e8cdf-8c4a-4d60-9305-6ce031e43fbd"
-                >7e4e8cdf-8c4a-4d60-9305-6ce031e43fbd</a
-              >', interviewerToken: '<a
-                href="1?token=bb1105e9-4da7-4097-929f-1ea0f3b1a8df"
-                >bb1105e9-4da7-4097-929f-1ea0f3b1a8df</a
-              >', intervieweeToken: '<a
-                href="1?token=bfe61c90-66b4-4f3f-a3ee-cf6504ce82ed"
-                >bfe61c90-66b4-4f3f-a3ee-cf6504ce82ed</a
-              >', startTime: Date.now() - 1000 * 60 * 24, length: 35, },]
-            </gl-component>
+            <gl-component><div id="drawingboard"></div></gl-component>
           </gl-col>
           <gl-col>
             <gl-row>
@@ -95,11 +73,16 @@ import 'codemirror/lib/codemirror.css';
 import { Chat } from 'vue-quick-chat';
 import 'vue-quick-chat/dist/vue-quick-chat.css';
 import 'golden-layout/src/css/goldenlayout-light-theme.css';
-import jQuery from 'jquery';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import jQuery from 'jquery'; // included using CDN as external librarys
 import 'magnific-popup/dist/jquery.magnific-popup';
 import 'magnific-popup/dist/magnific-popup.css';
+import '@/../public/lib/drawingboard/drawingboard.css';
+// eslint-disable-next-line import/no-unresolved
+import DrawingBoard from 'drawingboard';
 
 window.io = io; // make it globally available
+
 Vue.use(vgl);
 
 export default Vue.extend({
@@ -113,7 +96,27 @@ export default Vue.extend({
       role: -1, // current role
       connection: null as any, // current connection
 
-      code: 'const a = 10',
+      code: `[ { id: 0, HRId: 1, interviewerId: 12, intervieweeId: 18, HRToken:
+              '<a href="0?token=1f251805-b4ea-43a3-90a8-299abeb751e8"
+                >1f251805-b4ea-43a3-90a8-299abeb751e8</a
+              >', interviewerToken: '<a
+                href="0?token=60cd9fda-c9b6-4670-b5a5-f6fdb7f9ef6a"
+                >60cd9fda-c9b6-4670-b5a5-f6fdb7f9ef6a</a
+              >', intervieweeToken: '<a
+                href="0?token=563455cd-3111-42e6-9a2a-8f344dd887de"
+                >563455cd-3111-42e6-9a2a-8f344dd887de</a
+              >', startTime: Date.now() + 1000 * 60 * 24, length: 40, }, { id:
+              1, HRId: 2, interviewerId: 8, intervieweeId: 4, HRToken: '<a
+                href="1?token=7e4e8cdf-8c4a-4d60-9305-6ce031e43fbd"
+                >7e4e8cdf-8c4a-4d60-9305-6ce031e43fbd</a
+              >', interviewerToken: '<a
+                href="1?token=bb1105e9-4da7-4097-929f-1ea0f3b1a8df"
+                >bb1105e9-4da7-4097-929f-1ea0f3b1a8df</a
+              >', intervieweeToken: '<a
+                href="1?token=bfe61c90-66b4-4f3f-a3ee-cf6504ce82ed"
+                >bfe61c90-66b4-4f3f-a3ee-cf6504ce82ed</a
+              >', startTime: Date.now() - 1000 * 60 * 24, length: 35, },]
+            `,
       cmOptions: {
         tabSize: 2,
         mode: 'text/javascript',
@@ -350,6 +353,10 @@ export default Vue.extend({
   },
 
   mounted() {
+    const drawingboard = new DrawingBoard.Board('drawingboard', {
+      webStorage: false,
+    });
+
     const id = +this.$route.params.id;
     const { token } = this.$route.query;
     if (token === undefined) {
@@ -409,5 +416,10 @@ video {
 }
 .quick-chat-container .message-content {
   width: 100%;
+}
+
+#drawingboard {
+  width: 960px;
+  height: 540px;
 }
 </style>
