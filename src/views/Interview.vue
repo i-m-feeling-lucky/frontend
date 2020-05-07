@@ -4,38 +4,18 @@
       <golden-layout :hasHeaders="false" class="hscreen">
         <gl-row>
           <gl-col>
-            <gl-component
-              ><codemirror v-model="code" :options="cmOptions" />
+            <gl-component>
+              <codemirror v-model="code.data" :options="cmOptions" />
             </gl-component>
-            <gl-component
-              >测试房间<br />
-              [ { id: 0, HRId: 1, interviewerId: 12, intervieweeId: 18, HRToken:
-              '<a href="0?token=1f251805-b4ea-43a3-90a8-299abeb751e8"
-                >1f251805-b4ea-43a3-90a8-299abeb751e8</a
-              >', interviewerToken: '<a
-                href="0?token=60cd9fda-c9b6-4670-b5a5-f6fdb7f9ef6a"
-                >60cd9fda-c9b6-4670-b5a5-f6fdb7f9ef6a</a
-              >', intervieweeToken: '<a
-                href="0?token=563455cd-3111-42e6-9a2a-8f344dd887de"
-                >563455cd-3111-42e6-9a2a-8f344dd887de</a
-              >', startTime: Date.now() + 1000 * 60 * 24, length: 40, }, { id:
-              1, HRId: 2, interviewerId: 8, intervieweeId: 4, HRToken: '<a
-                href="1?token=7e4e8cdf-8c4a-4d60-9305-6ce031e43fbd"
-                >7e4e8cdf-8c4a-4d60-9305-6ce031e43fbd</a
-              >', interviewerToken: '<a
-                href="1?token=bb1105e9-4da7-4097-929f-1ea0f3b1a8df"
-                >bb1105e9-4da7-4097-929f-1ea0f3b1a8df</a
-              >', intervieweeToken: '<a
-                href="1?token=bfe61c90-66b4-4f3f-a3ee-cf6504ce82ed"
-                >bfe61c90-66b4-4f3f-a3ee-cf6504ce82ed</a
-              >', startTime: Date.now() - 1000 * 60 * 24, length: 35, },]
+            <gl-component>
+              <DrawingBoard v-model="drawing.data" />
             </gl-component>
           </gl-col>
           <gl-col>
             <gl-row>
               <!-- TODO click to switch between three modes -->
-              <gl-component
-                ><div
+              <gl-component>
+                <div
                   id="video-container-interviewer"
                   class="video-container"
                 ></div>
@@ -76,6 +56,7 @@
   </v-app>
 </template>
 
+
 <script lang="ts">
 /* eslint-disable max-len */
 /* eslint-disable no-param-reassign */
@@ -98,8 +79,10 @@ import 'golden-layout/src/css/goldenlayout-light-theme.css';
 import jQuery from 'jquery';
 import 'magnific-popup/dist/jquery.magnific-popup';
 import 'magnific-popup/dist/magnific-popup.css';
+import DrawingBoard from '@/components/interview/DrawingBoard.vue';
 
 window.io = io; // make it globally available
+
 Vue.use(vgl);
 
 export default Vue.extend({
@@ -107,13 +90,29 @@ export default Vue.extend({
   components: {
     codemirror,
     Chat,
+    DrawingBoard,
   },
   data() {
     return {
       role: -1, // current role
       connection: null as any, // current connection
 
-      code: 'const a = 10',
+      codeStopWatch: false,
+      drawingStopWatch: false,
+
+      code: {
+        timestamp: Date.now(),
+        data: 'Hello, world!',
+      },
+
+      drawing: {
+        timestamp: Date.now(),
+        data: {
+          version: '3.6.3', // TODO
+          objects: [],
+        },
+      },
+
       cmOptions: {
         tabSize: 2,
         mode: 'text/javascript',
@@ -168,6 +167,11 @@ export default Vue.extend({
           borderRadius: '50%',
         },
       },
+
+      drawingboard: {
+        timestamp: Date.now(),
+        data: {},
+      },
     };
   },
   computed: {
@@ -209,9 +213,20 @@ export default Vue.extend({
                   : event.data.chat.participantId === role,
             }),
           );
+        } else if (event.data.code) {
+          if (event.data.code.timestamp > this.code.timestamp) {
+            console.log('Received new code.');
+            this.codeStopWatch = true;
+            this.code = event.data.code;
+          }
+        } else if (event.data.drawing) {
+          if (event.data.drawing.timestamp > this.drawing.timestamp) {
+            console.log('Received new drawing.');
+            this.drawingStopWatch = true;
+            this.drawing = event.data.drawing;
+          }
         }
       };
-      (window as any).connection = connection; // TODO for debug only
 
       if (roleMap[role] === 'HR') {
         this.setInfo('你是 HR，正在旁观中');
@@ -356,7 +371,7 @@ export default Vue.extend({
       this.setError('无 token，禁止访问！');
       return;
     }
-    // Vefity the token, then initiate the interview
+    // Verify the token, then initiate the interview
     dummyVerify(id, token as string)
       .then((data) => {
         this.role = data.role;
@@ -394,6 +409,46 @@ export default Vue.extend({
 
     // TODO reorder based on screen size
   },
+
+  watch: {
+    // TODO this?
+    'code.data': function () {
+      if (this.connection === null) {
+        this.setError('未建立连接，代码无法同步！');
+        return;
+      }
+      if (this.connection.socket === null) {
+        this.setError('连接已断开，代码无法同步！请在新打开的窗口中执行操作！');
+        return;
+      }
+      if (!this.codeStopWatch) {
+        console.log('I changed the code. Send...');
+        this.code.timestamp = Date.now();
+        this.connection.send({ code: this.code });
+        // TODO send this.code to the server
+      } else {
+        this.codeStopWatch = false;
+      }
+    },
+    'drawing.data': function () {
+      if (this.connection === null) {
+        this.setError('未建立连接，绘图无法同步！');
+        return;
+      }
+      if (this.connection.socket === null) {
+        this.setError('连接已断开，绘图无法同步！请在新打开的窗口中执行操作！');
+        return;
+      }
+      if (!this.drawingStopWatch) {
+        console.log('I changed the drawing. Send...');
+        this.drawing.timestamp = Date.now();
+        this.connection.send({ drawing: this.drawing });
+        // TODO send this.drawing to the server
+      } else {
+        this.drawingStopWatch = false;
+      }
+    },
+  },
 });
 </script>
 
@@ -409,5 +464,9 @@ video {
 }
 .quick-chat-container .message-content {
   width: 100%;
+}
+
+.v-application ul {
+  padding-left: 0;
 }
 </style>

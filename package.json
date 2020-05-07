@@ -10,13 +10,15 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@types/jquery": "^3.3.36",
+    "@types/fabric": "^3.6.2",
+    "@types/jquery": "^3.3.38",
     "@types/socket.io-client": "^1.4.32",
     "axios": "^0.19.2",
     "codemirror": "^5.53.2",
     "core-js": "^3.6.4",
+    "fabric": "^3.6.3",
     "golden-layout": "^1.5.9",
-    "jquery": "^3.5.0",
+    "jquery": "^3.5.1",
     "magnific-popup": "^1.1.0",
     "rtcmulticonnection": "^3.7.0",
     "socket.io-client": "^2.3.0",
