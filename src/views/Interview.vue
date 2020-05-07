@@ -4,102 +4,18 @@
       <golden-layout :hasHeaders="false" class="hscreen">
         <gl-row>
           <gl-col>
-            <gl-component
-              ><codemirror v-model="code" :options="cmOptions" />
+            <gl-component>
+              <codemirror v-model="code.data" :options="cmOptions" />
             </gl-component>
             <gl-component>
-              <div style="width:50px;float:left;margin-left:8px;">
-                <ul id="toolsul" class="tools">
-                  <li id="toolsPencil" data-type="pen" class="active">
-                    <i
-                      class="icon-tools icon-pen-select"
-                      data-default="icon-tools icon-pen-black"
-                    ></i>
-                  </li>
-                  <li data-type="arrow">
-                    <i
-                      class="icon-tools icon-arrow-black"
-                      data-default="icon-tools icon-arrow-black"
-                    ></i>
-                  </li>
-                  <li data-type="line">
-                    <i
-                      class="icon-tools icon-line-black"
-                      data-default="icon-tools icon-line-black"
-                    ></i>
-                  </li>
-                  <li data-type="dottedline">
-                    <i
-                      class="icon-tools icon-dottedline-black"
-                      data-default="icon-tools icon-dottedline-black"
-                    ></i>
-                  </li>
-                  <li data-type="circle">
-                    <i
-                      class="icon-tools icon-circle-black"
-                      data-default="icon-tools icon-circle-black"
-                    ></i>
-                  </li>
-                  <li data-type="ellipse">
-                    <i
-                      class="icon-tools icon-ellipse-black"
-                      data-default="icon-tools icon-ellipse-black"
-                    ></i>
-                  </li>
-                  <li class="hide" data-type="square">
-                    <i
-                      class="icon-tools icon-square-black"
-                      data-default="icon-tools icon-square-black"
-                    ></i>
-                  </li>
-                  <li data-type="rectangle">
-                    <i
-                      class="icon-tools icon-rectangle-black"
-                      data-default="icon-tools icon-rectangle-black"
-                    ></i>
-                  </li>
-                  <li data-type="rightangle">
-                    <i
-                      class="icon-tools icon-rightangle-black"
-                      data-default="icon-tools icon-rightangle-black"
-                    ></i>
-                  </li>
-                  <li data-type="equilateral">
-                    <i
-                      class="icon-tools icon-equilateral-black"
-                      data-default="icon-tools icon-equilateral-black"
-                    ></i>
-                  </li>
-                  <li class="hide" data-type="isosceles">
-                    <i
-                      class="icon-tools icon-isosceles-black"
-                      data-default="icon-tools icon-isosceles-black"
-                    ></i>
-                  </li>
-                  <li data-type="text">
-                    <i
-                      class="icon-tools icon-text-black"
-                      data-default="icon-tools icon-text-black"
-                    ></i>
-                  </li>
-                  <li data-type="remove">
-                    <i
-                      class="icon-tools icon-remove-black"
-                      data-default="icon-tools icon-remove-black"
-                    ></i>
-                  </li>
-                </ul>
-              </div>
-              <div style="margin-left: 60px;">
-                <canvas id="c"></canvas>
-              </div>
+              <DrawingBoard v-model="drawing.data" />
             </gl-component>
           </gl-col>
           <gl-col>
             <gl-row>
               <!-- TODO click to switch between three modes -->
-              <gl-component
-                ><div
+              <gl-component>
+                <div
                   id="video-container-interviewer"
                   class="video-container"
                 ></div>
@@ -153,7 +69,6 @@ import vgl from 'vue-golden-layout';
 import { dummyVerify } from '@/utils/dummyInterview';
 import roleMap from '@/utils/roleMap';
 import toBase64 from '@/utils/toBase64';
-import loadScript from '@/utils/loadScript';
 import 'codemirror/mode/javascript/javascript'; // TODO
 import 'codemirror/theme/base16-dark.css';
 import { codemirror } from 'vue-codemirror';
@@ -161,11 +76,10 @@ import 'codemirror/lib/codemirror.css';
 import { Chat } from 'vue-quick-chat';
 import 'vue-quick-chat/dist/vue-quick-chat.css';
 import 'golden-layout/src/css/goldenlayout-light-theme.css';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import jQuery from 'jquery'; // included using CDN as external librarys
+import jQuery from 'jquery';
 import 'magnific-popup/dist/jquery.magnific-popup';
 import 'magnific-popup/dist/magnific-popup.css';
-import '@/../public/drawingboard/main.css';
+import DrawingBoard from '@/components/interview/DrawingBoard.vue';
 
 window.io = io; // make it globally available
 
@@ -176,33 +90,29 @@ export default Vue.extend({
   components: {
     codemirror,
     Chat,
+    DrawingBoard,
   },
   data() {
     return {
       role: -1, // current role
       connection: null as any, // current connection
 
-      code: `[ { id: 0, HRId: 1, interviewerId: 12, intervieweeId: 18, HRToken:
-              '<a href="0?token=1f251805-b4ea-43a3-90a8-299abeb751e8"
-                >1f251805-b4ea-43a3-90a8-299abeb751e8</a
-              >', interviewerToken: '<a
-                href="0?token=60cd9fda-c9b6-4670-b5a5-f6fdb7f9ef6a"
-                >60cd9fda-c9b6-4670-b5a5-f6fdb7f9ef6a</a
-              >', intervieweeToken: '<a
-                href="0?token=563455cd-3111-42e6-9a2a-8f344dd887de"
-                >563455cd-3111-42e6-9a2a-8f344dd887de</a
-              >', startTime: Date.now() + 1000 * 60 * 24, length: 40, }, { id:
-              1, HRId: 2, interviewerId: 8, intervieweeId: 4, HRToken: '<a
-                href="1?token=7e4e8cdf-8c4a-4d60-9305-6ce031e43fbd"
-                >7e4e8cdf-8c4a-4d60-9305-6ce031e43fbd</a
-              >', interviewerToken: '<a
-                href="1?token=bb1105e9-4da7-4097-929f-1ea0f3b1a8df"
-                >bb1105e9-4da7-4097-929f-1ea0f3b1a8df</a
-              >', intervieweeToken: '<a
-                href="1?token=bfe61c90-66b4-4f3f-a3ee-cf6504ce82ed"
-                >bfe61c90-66b4-4f3f-a3ee-cf6504ce82ed</a
-              >', startTime: Date.now() - 1000 * 60 * 24, length: 35, },]
-            `,
+      codeStopWatch: false,
+      drawingStopWatch: false,
+
+      code: {
+        timestamp: Date.now(),
+        data: 'Hello, world!',
+      },
+
+      drawing: {
+        timestamp: Date.now(),
+        data: {
+          version: '3.6.3', // TODO
+          objects: [],
+        },
+      },
+
       cmOptions: {
         tabSize: 2,
         mode: 'text/javascript',
@@ -257,6 +167,11 @@ export default Vue.extend({
           borderRadius: '50%',
         },
       },
+
+      drawingboard: {
+        timestamp: Date.now(),
+        data: {},
+      },
     };
   },
   computed: {
@@ -298,9 +213,20 @@ export default Vue.extend({
                   : event.data.chat.participantId === role,
             }),
           );
+        } else if (event.data.code) {
+          if (event.data.code.timestamp > this.code.timestamp) {
+            console.log('Received new code.');
+            this.codeStopWatch = true;
+            this.code = event.data.code;
+          }
+        } else if (event.data.drawing) {
+          if (event.data.drawing.timestamp > this.drawing.timestamp) {
+            console.log('Received new drawing.');
+            this.drawingStopWatch = true;
+            this.drawing = event.data.drawing;
+          }
         }
       };
-      (window as any).connection = connection; // TODO for debug only
 
       if (roleMap[role] === 'HR') {
         this.setInfo('你是 HR，正在旁观中');
@@ -439,9 +365,6 @@ export default Vue.extend({
   },
 
   mounted() {
-    loadScript('https://cdn.jsdelivr.net/npm/fabric@3.6.3/dist/fabric.min.js');
-    loadScript('/drawingboard/main.js');
-
     const id = +this.$route.params.id;
     const { token } = this.$route.query;
     if (token === undefined) {
@@ -485,6 +408,46 @@ export default Vue.extend({
       });
 
     // TODO reorder based on screen size
+  },
+
+  watch: {
+    // TODO this?
+    'code.data': function () {
+      if (this.connection === null) {
+        this.setError('未建立连接，代码无法同步！');
+        return;
+      }
+      if (this.connection.socket === null) {
+        this.setError('连接已断开，代码无法同步！请在新打开的窗口中执行操作！');
+        return;
+      }
+      if (!this.codeStopWatch) {
+        console.log('I changed the code. Send...');
+        this.code.timestamp = Date.now();
+        this.connection.send({ code: this.code });
+        // TODO send this.code to the server
+      } else {
+        this.codeStopWatch = false;
+      }
+    },
+    'drawing.data': function () {
+      if (this.connection === null) {
+        this.setError('未建立连接，绘图无法同步！');
+        return;
+      }
+      if (this.connection.socket === null) {
+        this.setError('连接已断开，绘图无法同步！请在新打开的窗口中执行操作！');
+        return;
+      }
+      if (!this.drawingStopWatch) {
+        console.log('I changed the drawing. Send...');
+        this.drawing.timestamp = Date.now();
+        this.connection.send({ drawing: this.drawing });
+        // TODO send this.drawing to the server
+      } else {
+        this.drawingStopWatch = false;
+      }
+    },
   },
 });
 </script>
