@@ -7,7 +7,93 @@
             <gl-component
               ><codemirror v-model="code" :options="cmOptions" />
             </gl-component>
-            <gl-component><div id="drawingboard"></div></gl-component>
+            <gl-component>
+              <div style="width:50px;float:left;margin-left:8px;">
+                <ul id="toolsul" class="tools">
+                  <li id="toolsPencil" data-type="pen" class="active">
+                    <i
+                      class="icon-tools icon-pen-select"
+                      data-default="icon-tools icon-pen-black"
+                    ></i>
+                  </li>
+                  <li data-type="arrow">
+                    <i
+                      class="icon-tools icon-arrow-black"
+                      data-default="icon-tools icon-arrow-black"
+                    ></i>
+                  </li>
+                  <li data-type="line">
+                    <i
+                      class="icon-tools icon-line-black"
+                      data-default="icon-tools icon-line-black"
+                    ></i>
+                  </li>
+                  <li data-type="dottedline">
+                    <i
+                      class="icon-tools icon-dottedline-black"
+                      data-default="icon-tools icon-dottedline-black"
+                    ></i>
+                  </li>
+                  <li data-type="circle">
+                    <i
+                      class="icon-tools icon-circle-black"
+                      data-default="icon-tools icon-circle-black"
+                    ></i>
+                  </li>
+                  <li data-type="ellipse">
+                    <i
+                      class="icon-tools icon-ellipse-black"
+                      data-default="icon-tools icon-ellipse-black"
+                    ></i>
+                  </li>
+                  <li class="hide" data-type="square">
+                    <i
+                      class="icon-tools icon-square-black"
+                      data-default="icon-tools icon-square-black"
+                    ></i>
+                  </li>
+                  <li data-type="rectangle">
+                    <i
+                      class="icon-tools icon-rectangle-black"
+                      data-default="icon-tools icon-rectangle-black"
+                    ></i>
+                  </li>
+                  <li data-type="rightangle">
+                    <i
+                      class="icon-tools icon-rightangle-black"
+                      data-default="icon-tools icon-rightangle-black"
+                    ></i>
+                  </li>
+                  <li data-type="equilateral">
+                    <i
+                      class="icon-tools icon-equilateral-black"
+                      data-default="icon-tools icon-equilateral-black"
+                    ></i>
+                  </li>
+                  <li class="hide" data-type="isosceles">
+                    <i
+                      class="icon-tools icon-isosceles-black"
+                      data-default="icon-tools icon-isosceles-black"
+                    ></i>
+                  </li>
+                  <li data-type="text">
+                    <i
+                      class="icon-tools icon-text-black"
+                      data-default="icon-tools icon-text-black"
+                    ></i>
+                  </li>
+                  <li data-type="remove">
+                    <i
+                      class="icon-tools icon-remove-black"
+                      data-default="icon-tools icon-remove-black"
+                    ></i>
+                  </li>
+                </ul>
+              </div>
+              <div style="margin-left: 60px;">
+                <canvas id="c"></canvas>
+              </div>
+            </gl-component>
           </gl-col>
           <gl-col>
             <gl-row>
@@ -54,6 +140,7 @@
   </v-app>
 </template>
 
+
 <script lang="ts">
 /* eslint-disable max-len */
 /* eslint-disable no-param-reassign */
@@ -66,6 +153,7 @@ import vgl from 'vue-golden-layout';
 import { dummyVerify } from '@/utils/dummyInterview';
 import roleMap from '@/utils/roleMap';
 import toBase64 from '@/utils/toBase64';
+import loadScript from '@/utils/loadScript';
 import 'codemirror/mode/javascript/javascript'; // TODO
 import 'codemirror/theme/base16-dark.css';
 import { codemirror } from 'vue-codemirror';
@@ -77,9 +165,7 @@ import 'golden-layout/src/css/goldenlayout-light-theme.css';
 import jQuery from 'jquery'; // included using CDN as external librarys
 import 'magnific-popup/dist/jquery.magnific-popup';
 import 'magnific-popup/dist/magnific-popup.css';
-import '@/../public/lib/drawingboard/drawingboard.css';
-// eslint-disable-next-line import/no-unresolved
-import DrawingBoard from 'drawingboard';
+import '@/../public/drawingboard/main.css';
 
 window.io = io; // make it globally available
 
@@ -353,9 +439,8 @@ export default Vue.extend({
   },
 
   mounted() {
-    const drawingboard = new DrawingBoard.Board('drawingboard', {
-      webStorage: false,
-    });
+    loadScript('https://cdn.jsdelivr.net/npm/fabric@3.6.3/dist/fabric.min.js');
+    loadScript('/drawingboard/main.js');
 
     const id = +this.$route.params.id;
     const { token } = this.$route.query;
@@ -363,7 +448,7 @@ export default Vue.extend({
       this.setError('无 token，禁止访问！');
       return;
     }
-    // Vefity the token, then initiate the interview
+    // Verify the token, then initiate the interview
     dummyVerify(id, token as string)
       .then((data) => {
         this.role = data.role;
@@ -418,8 +503,7 @@ video {
   width: 100%;
 }
 
-#drawingboard {
-  width: 960px;
-  height: 540px;
+.v-application ul {
+  padding-left: 0;
 }
 </style>
