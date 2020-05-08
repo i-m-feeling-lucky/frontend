@@ -183,7 +183,7 @@ console.log(
             text: '#fff',
           },
           messagesDisplay: {
-            bg: '#f7f3f3',
+            bg: '#eee',
           },
         },
         submitIcon: '#666',
@@ -509,5 +509,9 @@ video {
 .vue-codemirror,
 .CodeMirror {
   height: 100%;
+}
+
+.lm_content {
+  background-color: #eee;
 }
 </style>
