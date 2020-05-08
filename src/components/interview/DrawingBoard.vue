@@ -330,7 +330,9 @@ export default Vue.extend({
       this.mouseTo.y = options.e.offsetY;
       this.drawingObject = null;
       this.isDrawing = false;
-      this.$emit('input', this.canvas.toJSON());
+      if (this.drawType !== 'text') {
+        this.$emit('input', this.canvas.toJSON());
+      }
     });
     this.canvas.on('mouse:move', (options: any) => {
       if (!this.isDrawing || this.drawType === 'text') {
@@ -340,7 +342,6 @@ export default Vue.extend({
       this.mouseTo.y = options.e.offsetY;
       this.drawing();
     });
-
     this.canvas.on('selection:created', (e: any) => {
       if (e.target._objects) {
         // 多选删除
@@ -352,6 +353,13 @@ export default Vue.extend({
         // 单选删除
         this.canvas.remove(e.target);
       }
+    });
+    this.canvas.on('text:editing:exited', (e: any) => {
+      const temp = this.canvas.toJSON();
+      temp.objects = temp.objects.filter(
+        (x: any) => x.type !== 'textbox' || (x.type === 'textbox' && x.text !== ''),
+      );
+      this.$emit('input', temp);
     });
 
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -404,6 +412,9 @@ export default Vue.extend({
 
   watch: {
     value(val) {
+      if (this.drawType === 'text' && this.textbox) {
+        return;
+      }
       this.canvas.loadFromJSON(val, this.canvas.renderAll.bind(this.canvas));
     },
   },
