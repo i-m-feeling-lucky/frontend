@@ -73,6 +73,7 @@ import 'codemirror/mode/javascript/javascript'; // TODO
 import 'codemirror/theme/base16-dark.css';
 import { codemirror } from 'vue-codemirror';
 import 'codemirror/lib/codemirror.css';
+import 'codemirror/addon/display/autorefresh';
 import { Chat } from 'vue-quick-chat';
 import 'vue-quick-chat/dist/vue-quick-chat.css';
 import 'golden-layout/src/css/goldenlayout-light-theme.css';
@@ -102,7 +103,41 @@ export default Vue.extend({
 
       code: {
         timestamp: Date.now(),
-        data: 'Hello, world!',
+        data: `// A weird HelloWorld in JS
+const ________________ = [] + [];
+let _ = +[];
+_++;
+const _____ = _ + _;
+const ___ = _____ + _____;
+const __ = ___ + ___;
+const ____ = __ + __;
+const ______ = ____ + ____;
+const _______ = ______ + _;
+const ___________ = ______ + ______ + __;
+const ______________ = ___________ + ____ - _;
+const ____________ = _ + _____;
+const ________ = _______ * ____________ + _;
+const _________ = ________ + _;
+const _____________ = ______________ + ______ - ___ - _;
+const __________ = _____________ - ____________;
+const _______________ = __________ - ____________;
+console.log(
+  ________________ +
+    String.fromCharCode(
+      ___________,
+      _________,
+      _______________,
+      _______________,
+      __________,
+      ______,
+      ______________,
+      __________,
+      _____________,
+      _______________,
+      ________,
+      _______
+    )
+);`,
       },
 
       drawing: {
@@ -116,6 +151,11 @@ export default Vue.extend({
         theme: 'base16-dark',
         lineNumbers: true,
         line: true,
+        styleActiveLine: true,
+        styleSelectedText: true,
+        matchBrackets: true,
+        showCursorWhenSelecting: true,
+        autoRefresh: true,
       },
 
       placeholder: '点击编辑你的消息',
@@ -464,5 +504,10 @@ video {
 
 .v-application ul {
   padding-left: 0;
+}
+
+.vue-codemirror,
+.CodeMirror {
+  height: 100%;
 }
 </style>
