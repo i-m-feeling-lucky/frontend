@@ -218,12 +218,9 @@ console.log(
     resume() {
       // Restore chat, drawingboard and code history
       axios
-        .get(
-          `${API_URL}/interview/${this.id}/history/chat?scope=all`,
-          {
-            headers: { 'X-Token': this.token },
-          },
-        )
+        .get(`${API_URL}/interview/${this.id}/history/chat?scope=all`, {
+          headers: { 'X-Token': this.token },
+        })
         .then((response) => {
           this.messages = response.data.map((m: any) => ({
             ...m.data,
@@ -257,12 +254,9 @@ console.log(
           }
         });
       axios
-        .get(
-          `${API_URL}/interview/${this.id}/history/code?scope=latest`,
-          {
-            headers: { 'X-Token': this.token },
-          },
-        )
+        .get(`${API_URL}/interview/${this.id}/history/code?scope=latest`, {
+          headers: { 'X-Token': this.token },
+        })
         .then((response) => {
           if (response.data.length !== 0) {
             [this.code] = response.data;
