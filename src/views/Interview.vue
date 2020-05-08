@@ -66,7 +66,6 @@ import { mapGetters, mapMutations } from 'vuex';
 import RTCMultiConnection from 'rtcmulticonnection';
 import io from 'socket.io-client';
 import vgl from 'vue-golden-layout';
-import { dummyVerify } from '@/utils/dummyInterview';
 import roleMap from '@/utils/roleMap';
 import toBase64 from '@/utils/toBase64';
 import 'codemirror/mode/javascript/javascript'; // TODO
@@ -221,7 +220,6 @@ console.log(
       axios
         .get(
           `${API_URL}/interview/${this.id}/history/chat?scope=all`,
-          // Use time in server
           {
             headers: { 'X-Token': this.token },
           },
@@ -242,7 +240,6 @@ console.log(
       axios
         .get(
           `${API_URL}/interview/${this.id}/history/whiteboard?scope=latest`,
-          // Use time in server
           {
             headers: { 'X-Token': this.token },
           },
@@ -262,7 +259,6 @@ console.log(
       axios
         .get(
           `${API_URL}/interview/${this.id}/history/code?scope=latest`,
-          // Use time in server
           {
             headers: { 'X-Token': this.token },
           },
@@ -511,10 +507,13 @@ console.log(
       return;
     }
     // Verify the token, then initiate the interview
-    dummyVerify(id, token as string)
-      .then((data) => {
-        this.role = data.role;
-        const roleString = roleMap[data.role];
+    axios
+      .get(`${API_URL}/interview/${this.id}/verify`, {
+        headers: { 'X-Token': this.token },
+      })
+      .then((response) => {
+        this.role = response.data.role;
+        const roleString = roleMap[response.data.role];
         if (roleString === 'interviewee') {
           this.participants[0].name = '面试官';
           this.participants[0].id = roleMap.indexOf('interviewer');
@@ -541,10 +540,14 @@ console.log(
             .setAttribute('contenteditable', 'false');
         }
         this.resume();
-        this.initialInterview(id, data.role, data.password);
+        this.initialInterview(id, response.data.role, response.data.password);
       })
       .catch((error) => {
-        this.setError(error.message);
+        if (error.response) {
+          this.setError(error.response.data.message);
+        } else {
+          this.setError(error.message);
+        }
       });
 
     // TODO reorder based on screen size
