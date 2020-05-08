@@ -14,7 +14,6 @@ export default new Vuex.Store({
     user: (userString !== null && JSON.parse(userString).expiresAt > Math.floor(Date.now() / 1000))
       ? JSON.parse(userString) : {
         email: null,
-        name: null,
         role: null,
         token: null,
         expiresAt: null,
@@ -69,7 +68,6 @@ export default new Vuex.Store({
           .then((response) => {
             const user = {
               email: payload.email,
-              name: response.data.name,
               role: response.data.role,
               token: response.data.token,
               expiresAt: Math.floor(Date.now() / 1000) + response.data.expires,
@@ -94,7 +92,6 @@ export default new Vuex.Store({
           .then(() => {
             commit('setUser', {
               email: null,
-              name: null,
               role: null,
               token: null,
               expiresAt: null,

@@ -18,7 +18,6 @@ const routes: Array<RouteConfig> = [
     component: () => import(/* webpackChunkName: "console" */ '@/views/Console.vue'),
     children: [
       {
-        // TODO rename all webpackChunkName
         path: '',
         component: () => import(/* webpackChunkName: "console" */ '@/components/console/Dashboard.vue'),
       },

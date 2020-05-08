@@ -516,19 +516,19 @@ console.log(
         this.role = data.role;
         const roleString = roleMap[data.role];
         if (roleString === 'interviewee') {
-          this.participants[0].name = '面试官'; // TODO real name
+          this.participants[0].name = '面试官';
           this.participants[0].id = roleMap.indexOf('interviewer');
           this.myself.name = '候选人'; // TODO real name
           this.myself.id = roleMap.indexOf('interviewee');
         } else if (roleString === 'interviewer') {
           this.participants[0].name = '候选人'; // TODO real name
           this.participants[0].id = roleMap.indexOf('interviewee');
-          this.myself.name = '面试官'; // TODO real name
+          this.myself.name = '面试官';
           this.myself.id = roleMap.indexOf('interviewer');
         } else if (roleString === 'HR') {
           this.participants[0].name = '候选人'; // TODO real name
           this.participants[0].id = roleMap.indexOf('interviewee');
-          this.myself.name = '面试官'; // TODO real name
+          this.myself.name = '面试官';
           this.myself.id = roleMap.indexOf('interviewer');
           this.placeholder = '您只能旁观，不能发送信息';
           document
