@@ -107,10 +107,7 @@ export default Vue.extend({
 
       drawing: {
         timestamp: Date.now(),
-        data: {
-          version: '3.6.3', // TODO
-          objects: [],
-        },
+        data: {},
       },
 
       cmOptions: {
@@ -166,11 +163,6 @@ export default Vue.extend({
           height: '30px',
           borderRadius: '50%',
         },
-      },
-
-      drawingboard: {
-        timestamp: Date.now(),
-        data: {},
       },
     };
   },
@@ -464,6 +456,10 @@ video {
 }
 .quick-chat-container .message-content {
   width: 100%;
+}
+
+.quick-chat-container .container-message-manager {
+  line-height: 1;
 }
 
 .v-application ul {

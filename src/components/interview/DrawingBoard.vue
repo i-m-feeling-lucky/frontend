@@ -404,10 +404,7 @@ export default Vue.extend({
 
   watch: {
     value(val) {
-      this.canvas.clear();
-      this.canvas.loadFromJSON(val, () => {
-        this.canvas.renderAll.bind(this.canvas);
-      });
+      this.canvas.loadFromJSON(val, this.canvas.renderAll.bind(this.canvas));
     },
   },
 });
