@@ -81,10 +81,13 @@ import jQuery from 'jquery';
 import 'magnific-popup/dist/jquery.magnific-popup';
 import 'magnific-popup/dist/magnific-popup.css';
 import DrawingBoard from '@/components/interview/DrawingBoard.vue';
+import axios from 'axios';
 
 window.io = io; // make it globally available
 
 Vue.use(vgl);
+
+const API_URL = process.env.VUE_APP_API_URL;
 
 export default Vue.extend({
   name: 'Interview',
@@ -96,13 +99,15 @@ export default Vue.extend({
   data() {
     return {
       role: -1, // current role
+      id: -1, // current interview id
+      token: '', // current user's token
       connection: null as any, // current connection
 
       codeStopWatch: false,
       drawingStopWatch: false,
 
       code: {
-        timestamp: Date.now(),
+        time: Date.now(),
         data: `// A weird HelloWorld in JS
 const ________________ = [] + [];
 let _ = +[];
@@ -141,7 +146,7 @@ console.log(
       },
 
       drawing: {
-        timestamp: Date.now(),
+        time: Date.now(),
         data: {},
       },
 
@@ -211,6 +216,70 @@ console.log(
   },
   methods: {
     ...mapMutations(['setError', 'setInfo']),
+    resume() {
+      // Restore chat, drawingboard and code history
+      axios
+        .get(
+          `${API_URL}/interview/${this.id}/history/chat?scope=all`,
+          // Use time in server
+          {
+            headers: { 'X-Token': this.token },
+          },
+        )
+        .then((response) => {
+          this.messages = response.data.map((m: any) => ({
+            ...m.data,
+            timestamp: m.time, // TODO change format here
+          }));
+        })
+        .catch((error) => {
+          if (error.response) {
+            this.setError(error.response.data.message);
+          } else {
+            this.setError(error.message);
+          }
+        });
+      axios
+        .get(
+          `${API_URL}/interview/${this.id}/history/whiteboard?scope=latest`,
+          // Use time in server
+          {
+            headers: { 'X-Token': this.token },
+          },
+        )
+        .then((response) => {
+          if (response.data.length !== 0) {
+            [this.drawing] = response.data;
+          }
+        })
+        .catch((error) => {
+          if (error.response) {
+            this.setError(error.response.data.message);
+          } else {
+            this.setError(error.message);
+          }
+        });
+      axios
+        .get(
+          `${API_URL}/interview/${this.id}/history/code?scope=latest`,
+          // Use time in server
+          {
+            headers: { 'X-Token': this.token },
+          },
+        )
+        .then((response) => {
+          if (response.data.length !== 0) {
+            [this.code] = response.data;
+          }
+        })
+        .catch((error) => {
+          if (error.response) {
+            this.setError(error.response.data.message);
+          } else {
+            this.setError(error.message);
+          }
+        });
+    },
     initialInterview(id: number, role: number, password: string) {
       const connection = new RTCMultiConnection();
       // TODO set enableLogs to false
@@ -246,13 +315,13 @@ console.log(
             }),
           );
         } else if (event.data.code) {
-          if (event.data.code.timestamp > this.code.timestamp) {
+          if (event.data.code.time > this.code.time) {
             console.log('Received new code.');
             this.codeStopWatch = true;
             this.code = event.data.code;
           }
         } else if (event.data.drawing) {
-          if (event.data.drawing.timestamp > this.drawing.timestamp) {
+          if (event.data.drawing.time > this.drawing.time) {
             console.log('Received new drawing.');
             this.drawingStopWatch = true;
             this.drawing = event.data.drawing;
@@ -357,10 +426,28 @@ console.log(
       }
       this.messages.push(message);
       this.connection.send({ chat: message });
-      // TODO send to backend history
-      setTimeout(() => {
-        message.uploaded = true;
-      }, 2000);
+      axios
+        .post(
+          `${API_URL}/interview/${this.id}/history/chat`,
+          // Use time in server
+          { ...message, timestamp: 0 },
+          {
+            headers: { 'X-Token': this.token },
+          },
+        )
+        .then(() => {
+          message.uploaded = true;
+        })
+        .catch((error) => {
+          if (error.response) {
+            this.setError(error.response.data.message);
+          } else {
+            this.setError(error.message);
+          }
+        });
+      // setTimeout(() => {
+      //   message.uploaded = true;
+      // }, 2000);
     },
     onImageSelected({ file, message }: any) {
       if (this.connection === null) {
@@ -377,7 +464,25 @@ console.log(
           message.src = base64;
           this.messages.push(message);
           this.connection.send({ chat: message });
-          // TODO send to backend history
+          axios
+            .post(
+              `${API_URL}/interview/${this.id}/history/chat`,
+              // Use time in server
+              { ...message, timestamp: 0 },
+              {
+                headers: { 'X-Token': this.token },
+              },
+            )
+            .then(() => {
+              message.uploaded = true;
+            })
+            .catch((error) => {
+              if (error.response) {
+                this.setError(error.response.data.message);
+              } else {
+                this.setError(error.message);
+              }
+            });
           setTimeout(() => {
             message.uploaded = true;
           }, 2000);
@@ -399,6 +504,8 @@ console.log(
   mounted() {
     const id = +this.$route.params.id;
     const { token } = this.$route.query;
+    this.id = id;
+    this.token = token as string;
     if (token === undefined) {
       this.setError('无 token，禁止访问！');
       return;
@@ -433,6 +540,7 @@ console.log(
             .querySelector('.quick-chat-container .message-input')!
             .setAttribute('contenteditable', 'false');
         }
+        this.resume();
         this.initialInterview(id, data.role, data.password);
       })
       .catch((error) => {
@@ -455,9 +563,24 @@ console.log(
       }
       if (!this.codeStopWatch) {
         console.log('I changed the code. Send...');
-        this.code.timestamp = Date.now();
+        this.code.time = Date.now();
         this.connection.send({ code: this.code });
-        // TODO send this.code to the server
+        axios
+          .post(
+            `${API_URL}/interview/${this.id}/history/code`,
+            // Use time in server
+            this.code.data,
+            {
+              headers: { 'X-Token': this.token },
+            },
+          )
+          .catch((error) => {
+            if (error.response) {
+              this.setError(error.response.data.message);
+            } else {
+              this.setError(error.message);
+            }
+          });
       } else {
         this.codeStopWatch = false;
       }
@@ -473,9 +596,24 @@ console.log(
       }
       if (!this.drawingStopWatch) {
         console.log('I changed the drawing. Send...');
-        this.drawing.timestamp = Date.now();
+        this.drawing.time = Date.now();
         this.connection.send({ drawing: this.drawing });
-        // TODO send this.drawing to the server
+        axios
+          .post(
+            `${API_URL}/interview/${this.id}/history/drawing`,
+            // Use time in server
+            this.drawing.data,
+            {
+              headers: { 'X-Token': this.token },
+            },
+          )
+          .catch((error) => {
+            if (error.response) {
+              this.setError(error.response.data.message);
+            } else {
+              this.setError(error.message);
+            }
+          });
       } else {
         this.drawingStopWatch = false;
       }
