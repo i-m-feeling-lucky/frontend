@@ -100,6 +100,7 @@ export default Vue.extend({
       role: -1, // current role
       id: -1, // current interview id
       token: '', // current user's token
+      password: '', // password for connection
       connection: null as any, // current connection
 
       codeStopWatch: false,
@@ -228,7 +229,7 @@ console.log(
           }));
         })
         .catch((error) => {
-          if (error.response) {
+          if (error.response && error.response.data.message) {
             this.setError(error.response.data.message);
           } else {
             this.setError(error.message);
@@ -247,7 +248,7 @@ console.log(
           }
         })
         .catch((error) => {
-          if (error.response) {
+          if (error.response && error.response.data.message) {
             this.setError(error.response.data.message);
           } else {
             this.setError(error.message);
@@ -263,35 +264,34 @@ console.log(
           }
         })
         .catch((error) => {
-          if (error.response) {
+          if (error.response && error.response.data.message) {
             this.setError(error.response.data.message);
           } else {
             this.setError(error.message);
           }
         });
     },
-    initialInterview(id: number, role: number, password: string) {
-      const connection = new RTCMultiConnection();
+    initialInterview() {
+      this.connection = new RTCMultiConnection();
       // TODO set enableLogs to false
       // TODO stun server
-      this.connection = connection; // Assign into global space
-      connection.socketURL = process.env.VUE_APP_RTC_SOCKET_URL;
-      connection.password = password;
-      connection.session = {
+      this.connection.socketURL = process.env.VUE_APP_RTC_SOCKET_URL;
+      this.connection.password = this.password;
+      this.connection.session = {
         audio: true,
         video: true,
         data: true,
       };
       // TODO mirror video
-      connection.videosContainer = {
+      this.connection.videosContainer = {
         interviewer: document.getElementById('video-container-interviewer')!,
         interviewee: document.getElementById('video-container-interviewee')!,
       };
-      connection.extra = {
-        role,
+      this.connection.extra = {
+        role: this.role,
         createdTime: Date.now(),
       };
-      connection.onmessage = (event: any) => {
+      this.connection.onmessage = (event: any) => {
         if (event.data.chat) {
           this.messages.push(
             Object.assign(event.data.chat, {
@@ -299,9 +299,9 @@ console.log(
               myself:
                 // If current user is HR, display interviewer's message on the right
                 // by setting `myself` true
-                roleMap[role] === 'HR'
+                roleMap[this.role] === 'HR'
                   ? roleMap[event.data.chat.participantId] === 'interviewer'
-                  : event.data.chat.participantId === role,
+                  : event.data.chat.participantId === this.role,
             }),
           );
         } else if (event.data.code) {
@@ -319,86 +319,86 @@ console.log(
         }
       };
 
-      if (roleMap[role] === 'HR') {
+      if (roleMap[this.role] === 'HR') {
         this.setInfo('你是 HR，正在旁观中');
-        connection.dontCaptureUserMedia = true;
+        this.connection.dontCaptureUserMedia = true;
         // TODO currently HR can only get remote stream in the beginning
-        connection.onstream = (event: any) => {
+        this.connection.onstream = (event: any) => {
           const videoElement = event.mediaElement;
           if (event.type === 'remote') {
             if (
               ['interviewer', 'interviewee'].includes(roleMap[event.extra.role])
             ) {
-              const targetElement = connection.videosContainer[roleMap[event.extra.role]];
+              const targetElement = this.connection.videosContainer[roleMap[event.extra.role]];
               targetElement.innerHTML = '';
               targetElement.appendChild(videoElement);
             }
           }
         };
-        connection.openOrJoin(id.toString());
-      } else if (roleMap[role] === 'interviewer') {
+        this.connection.openOrJoin(this.id.toString());
+      } else if (roleMap[this.role] === 'interviewer') {
         this.setInfo('你是面试官，请面试');
-        connection.onstream = (event: any) => {
+        this.connection.onstream = (event: any) => {
           const videoElement = event.mediaElement;
           if (event.type === 'local') {
-            const targetElement = connection.videosContainer.interviewer;
+            const targetElement = this.connection.videosContainer.interviewer;
             targetElement.innerHTML = '';
             targetElement.appendChild(videoElement);
           } else if (event.type === 'remote') {
-            if (event.extra.role === role) {
-              if (event.extra.createdTime > connection.extra.createdTime) {
+            if (event.extra.role === this.role) {
+              if (event.extra.createdTime > this.connection.extra.createdTime) {
                 this.setInfo('您创建了新的连接，此连接断开。');
-                this.closeConnection(connection);
+                this.closeConnection();
               } else {
                 this.setInfo('您打开了新连接，旧连接自动断开。');
               }
             } else if (roleMap[event.extra.role] === 'interviewee') {
-              const targetElement = connection.videosContainer.interviewee;
+              const targetElement = this.connection.videosContainer.interviewee;
               targetElement.innerHTML = '';
               targetElement.appendChild(videoElement);
             }
           }
         };
-        connection.openOrJoin(id.toString());
-      } else if (roleMap[role] === 'interviewee') {
+        this.connection.openOrJoin(this.id.toString());
+      } else if (roleMap[this.role] === 'interviewee') {
         this.setInfo('你是候选人，请接受面试');
-        connection.onstream = (event: any) => {
+        this.connection.onstream = (event: any) => {
           const videoElement = event.mediaElement;
           if (event.type === 'local') {
-            const targetElement = connection.videosContainer.interviewee;
+            const targetElement = this.connection.videosContainer.interviewee;
             targetElement.innerHTML = '';
             targetElement.appendChild(videoElement);
           } else if (event.type === 'remote') {
-            if (event.extra.role === role) {
-              if (event.extra.createdTime > connection.extra.createdTime) {
+            if (event.extra.role === this.role) {
+              if (event.extra.createdTime > this.connection.extra.createdTime) {
                 this.setInfo('您创建了新的连接，此连接断开。');
-                this.closeConnection(connection);
+                this.closeConnection();
               } else {
                 this.setInfo('您打开了新连接，旧连接自动断开。');
               }
             } else if (roleMap[event.extra.role] === 'interviewer') {
-              const targetElement = connection.videosContainer.interviewer;
+              const targetElement = this.connection.videosContainer.interviewer;
               targetElement.innerHTML = '';
               targetElement.appendChild(videoElement);
             }
           }
         };
-        connection.openOrJoin(id.toString());
+        this.connection.openOrJoin(this.id.toString());
       } else {
         this.setError('系统错误！');
       }
     },
-    closeConnection(connection: any) {
+    closeConnection() {
       // disconnect with all users
-      connection.getAllParticipants().forEach((pid: any) => {
-        connection.disconnectWith(pid);
+      this.connection.getAllParticipants().forEach((pid: any) => {
+        this.connection.disconnectWith(pid);
       });
       // stop all local cameras
-      connection.attachStreams.forEach((localStream: any) => {
+      this.connection.attachStreams.forEach((localStream: any) => {
         localStream.stop();
       });
       // close socket.io connection
-      connection.closeSocket();
+      this.connection.closeSocket();
     },
 
     onMessageSubmit(message: any) {
@@ -429,7 +429,7 @@ console.log(
           message.uploaded = true;
         })
         .catch((error) => {
-          if (error.response) {
+          if (error.response && error.response.data.message) {
             this.setError(error.response.data.message);
           } else {
             this.setError(error.message);
@@ -467,7 +467,7 @@ console.log(
               message.uploaded = true;
             })
             .catch((error) => {
-              if (error.response) {
+              if (error.response && error.response.data.message) {
                 this.setError(error.response.data.message);
               } else {
                 this.setError(error.message);
@@ -494,12 +494,12 @@ console.log(
   mounted() {
     const id = +this.$route.params.id;
     const { token } = this.$route.query;
-    this.id = id;
-    this.token = token as string;
     if (token === undefined) {
       this.setError('无 token，禁止访问！');
       return;
     }
+    this.id = id;
+    this.token = token as string;
     // Verify the token, then initiate the interview
     axios
       .get(`${API_URL}/interview/${this.id}/verify`, {
@@ -507,7 +507,7 @@ console.log(
       })
       .then((response) => {
         this.role = response.data.role;
-        const roleString = roleMap[response.data.role];
+        const roleString = roleMap[this.role];
         if (roleString === 'interviewee') {
           this.participants[0].name = '面试官';
           this.participants[0].id = roleMap.indexOf('interviewer');
@@ -534,10 +534,10 @@ console.log(
             .setAttribute('contenteditable', 'false');
         }
         this.resume();
-        this.initialInterview(id, response.data.role, response.data.password);
+        this.initialInterview();
       })
       .catch((error) => {
-        if (error.response) {
+        if (error.response && error.response.data.message) {
           this.setError(error.response.data.message);
         } else {
           this.setError(error.message);
@@ -572,7 +572,7 @@ console.log(
             },
           )
           .catch((error) => {
-            if (error.response) {
+            if (error.response && error.response.data.message) {
               this.setError(error.response.data.message);
             } else {
               this.setError(error.message);
@@ -605,7 +605,7 @@ console.log(
             },
           )
           .catch((error) => {
-            if (error.response) {
+            if (error.response && error.response.data.message) {
               this.setError(error.response.data.message);
             } else {
               this.setError(error.message);

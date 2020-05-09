@@ -77,7 +77,7 @@ export default new Vuex.Store({
             localStorage.setItem('user', JSON.stringify(user));
             resolve();
           }).catch((error) => {
-            if (error.response) {
+            if (error.response && error.response.data.message) {
               reject(error.response.data);
             } else {
               reject(error);
@@ -100,7 +100,7 @@ export default new Vuex.Store({
             localStorage.removeItem('user');
             resolve();
           }).catch((error) => {
-            if (error.response) {
+            if (error.response && error.response.data.message) {
               reject(error.response.data);
             } else {
               reject(error);
