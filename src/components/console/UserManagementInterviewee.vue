@@ -8,6 +8,9 @@ import { mapGetters } from 'vuex';
 
 export default Vue.extend({
   name: 'UserManagementInterviewee',
+  metaInfo: {
+    title: '候选人管理',
+  },
   components: {
     admin: () => import(/* webpackChunkName: "console-admin" */ '@/components/console/admin/UserManagementInterviewee.vue'),
     HR: () => import(/* webpackChunkName: "console-HR" */ '@/components/console/HR/UserManagementInterviewee.vue'),

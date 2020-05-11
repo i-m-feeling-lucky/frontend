@@ -2,7 +2,7 @@
   <div>
     <v-card>
       <v-card-text class="text--primary">
-        通知消息（低优先级）
+        通知（低优先级）
       </v-card-text>
     </v-card>
   </div>
@@ -13,5 +13,8 @@ import Vue from 'vue';
 
 export default Vue.extend({
   name: 'Notification',
+  metaInfo: {
+    title: '通知',
+  },
 });
 </script>

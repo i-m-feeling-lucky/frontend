@@ -90,6 +90,10 @@ const API_URL = process.env.VUE_APP_API_URL;
 
 export default Vue.extend({
   name: 'Interview',
+  // TODO room id and interviewee name
+  metaInfo: {
+    title: '面试房间',
+  },
   components: {
     codemirror,
     Chat,
@@ -271,7 +275,7 @@ console.log(
           }
         });
     },
-    initialInterview() {
+    initializeConnection() {
       this.connection = new RTCMultiConnection();
       // TODO set enableLogs to false
       // TODO stun server
@@ -329,7 +333,9 @@ console.log(
             if (
               ['interviewer', 'interviewee'].includes(roleMap[event.extra.role])
             ) {
-              const targetElement = this.connection.videosContainer[roleMap[event.extra.role]];
+              const targetElement = this.connection.videosContainer[
+                roleMap[event.extra.role]
+              ];
               targetElement.innerHTML = '';
               targetElement.appendChild(videoElement);
             }
@@ -388,6 +394,7 @@ console.log(
         this.setError('系统错误！');
       }
     },
+
     closeConnection() {
       // disconnect with all users
       this.connection.getAllParticipants().forEach((pid: any) => {
@@ -492,15 +499,13 @@ console.log(
   },
 
   mounted() {
-    const id = +this.$route.params.id;
-    const { token } = this.$route.query;
-    if (token === undefined) {
+    this.id = +this.$route.params.id;
+    this.token = this.$route.query.token as string;
+    if (this.token === undefined) {
       this.setError('无 token，禁止访问！');
       return;
     }
-    this.id = id;
-    this.token = token as string;
-    // Verify the token, then initiate the interview
+    // Verify the token, then initialize the interview
     axios
       .get(`${API_URL}/interview/${this.id}/verify`, {
         headers: { 'X-Token': this.token },
@@ -534,7 +539,7 @@ console.log(
             .setAttribute('contenteditable', 'false');
         }
         this.resume();
-        this.initialInterview();
+        this.initializeConnection();
       })
       .catch((error) => {
         if (error.response && error.response.data.message) {

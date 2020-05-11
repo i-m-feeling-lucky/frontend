@@ -13,5 +13,8 @@ import Vue from 'vue';
 
 export default Vue.extend({
   name: 'ChangeFreeTime',
+  metaInfo: {
+    title: '空闲时间修改',
+  },
 });
 </script>

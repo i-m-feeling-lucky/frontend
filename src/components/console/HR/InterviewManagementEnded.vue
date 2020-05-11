@@ -13,5 +13,8 @@ import Vue from 'vue';
 
 export default Vue.extend({
   name: 'InterviewManagementEnded',
+  metaInfo: {
+    title: '已结束的面试',
+  },
 });
 </script>
