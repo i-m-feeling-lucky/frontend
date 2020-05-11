@@ -2,7 +2,7 @@
   <div>
     <v-card>
       <v-card-text class="text--primary">
-        用户资料（高优先级）
+        个人信息（高优先级）
         <br />
         {{ getUser }}
       </v-card-text>
@@ -16,6 +16,9 @@ import { mapGetters } from 'vuex';
 
 export default Vue.extend({
   name: 'Profile',
+  metaInfo: {
+    title: '个人信息',
+  },
   computed: {
     ...mapGetters(['getUser']),
   },

@@ -35,6 +35,9 @@ import { mapGetters, mapMutations } from 'vuex';
 
 export default Vue.extend({
   name: 'App',
+  metaInfo: {
+    titleTemplate: `%s - ${process.env.VUE_APP_SITE_NAME}`,
+  },
   computed: {
     ...mapGetters(['getInfo', 'getSuccess', 'getError']),
   },

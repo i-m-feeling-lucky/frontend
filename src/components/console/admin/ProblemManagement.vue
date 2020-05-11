@@ -13,5 +13,8 @@ import Vue from 'vue';
 
 export default Vue.extend({
   name: 'ProblemManagement',
+  metaInfo: {
+    title: '题目管理',
+  },
 });
 </script>

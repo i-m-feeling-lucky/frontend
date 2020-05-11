@@ -13,5 +13,8 @@ import Vue from 'vue';
 
 export default Vue.extend({
   name: 'ChangePassword',
+  metaInfo: {
+    title: '密码修改',
+  },
 });
 </script>

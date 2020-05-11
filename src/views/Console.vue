@@ -1,6 +1,9 @@
 <template>
   <v-app>
-    <NavigationDrawer :items="consoleItems[getUserRoleString]" v-model="drawer"/>
+    <NavigationDrawer
+      :items="consoleItems[getUserRoleString]"
+      v-model="drawer"
+    />
     <v-app-bar
       :clipped-left="$vuetify.breakpoint.lgAndUp"
       app
@@ -9,7 +12,7 @@
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title style="width: 300px" class="ml-0 pl-4">
-        <span class="hidden-sm-and-down">LOGO 在线面试</span>
+        <span class="hidden-sm-and-down">{{ siteName }}</span>
       </v-toolbar-title>
       <v-text-field
         solo-inverted
@@ -86,6 +89,9 @@ export default Vue.extend({
   },
   computed: {
     ...mapGetters(['logged', 'getUserRoleString', 'getError']),
+    siteName() {
+      return process.env.VUE_APP_SITE_NAME;
+    },
   },
   data() {
     return {
@@ -98,7 +104,7 @@ export default Vue.extend({
           { heading: '业务管理' },
           {
             icon: 'mdi-view-dashboard',
-            text: '首页',
+            text: '仪表盘',
             to: '/console',
           },
           {
@@ -106,9 +112,21 @@ export default Vue.extend({
             text: '用户管理',
             model: false,
             children: [
-              { icon: 'mdi-duck', text: 'HR', to: '/console/user-management/HR' },
-              { icon: 'mdi-duck', text: '面试官', to: '/console/user-management/interviewer' },
-              { icon: 'mdi-duck', text: '候选人', to: '/console/user-management/interviewee' },
+              {
+                icon: 'mdi-duck',
+                text: 'HR',
+                to: '/console/user-management/HR',
+              },
+              {
+                icon: 'mdi-duck',
+                text: '面试官',
+                to: '/console/user-management/interviewer',
+              },
+              {
+                icon: 'mdi-duck',
+                text: '候选人',
+                to: '/console/user-management/interviewee',
+              },
             ],
           },
           {
@@ -137,7 +155,7 @@ export default Vue.extend({
           { heading: '业务管理' },
           {
             icon: 'mdi-view-dashboard',
-            text: '首页',
+            text: '仪表盘',
             to: '/console',
           },
           {
@@ -145,8 +163,16 @@ export default Vue.extend({
             text: '用户管理',
             model: false,
             children: [
-              { icon: 'mdi-duck', text: '面试官', to: '/console/user-management/interviewer' },
-              { icon: 'mdi-duck', text: '候选人', to: '/console/user-management/interviewee' },
+              {
+                icon: 'mdi-duck',
+                text: '面试官',
+                to: '/console/user-management/interviewer',
+              },
+              {
+                icon: 'mdi-duck',
+                text: '候选人',
+                to: '/console/user-management/interviewee',
+              },
             ],
           },
           {
@@ -154,9 +180,21 @@ export default Vue.extend({
             text: '面试管理',
             model: false,
             children: [
-              { icon: 'mdi-ray-start', text: '未开始', to: '/console/interview-management/upcoming' },
-              { icon: 'mdi-ray-vertex', text: '正在进行', to: '/console/interview-management/active' },
-              { icon: 'mdi-ray-end', text: '已结束', to: '/console/interview-management/ended' },
+              {
+                icon: 'mdi-ray-start',
+                text: '未开始',
+                to: '/console/interview-management/upcoming',
+              },
+              {
+                icon: 'mdi-ray-vertex',
+                text: '进行中',
+                to: '/console/interview-management/active',
+              },
+              {
+                icon: 'mdi-ray-end',
+                text: '已结束',
+                to: '/console/interview-management/ended',
+              },
             ],
           },
           { heading: '其他' },
@@ -180,7 +218,7 @@ export default Vue.extend({
           { heading: '业务管理' },
           {
             icon: 'mdi-view-dashboard',
-            text: '首页',
+            text: '仪表盘',
             to: '/console',
           },
           {
@@ -188,8 +226,16 @@ export default Vue.extend({
             text: '面试管理',
             model: false,
             children: [
-              { icon: 'mdi-ray-start', text: '未开始', to: '/console/interview-management/upcoming' },
-              { icon: 'mdi-ray-vertex', text: '正在进行', to: '/console/interview-management/active' },
+              {
+                icon: 'mdi-ray-start',
+                text: '未开始',
+                to: '/console/interview-management/upcoming',
+              },
+              {
+                icon: 'mdi-ray-vertex',
+                text: '进行中',
+                to: '/console/interview-management/active',
+              },
             ],
           },
           { heading: '其他' },

@@ -57,6 +57,9 @@ import { mapGetters, mapMutations, mapActions } from 'vuex';
 
 export default Vue.extend({
   name: 'Login',
+  metaInfo: {
+    title: '登录',
+  },
   computed: {
     ...mapGetters(['logged', 'getError']),
   },
