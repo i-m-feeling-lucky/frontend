@@ -56,7 +56,6 @@
   </v-app>
 </template>
 
-
 <script lang="ts">
 /* eslint-disable max-len */
 /* eslint-disable no-param-reassign */
