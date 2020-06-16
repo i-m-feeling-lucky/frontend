@@ -13,6 +13,7 @@ export default new Vuex.Store({
     // If `user` in localStorage and not expired, restore it
     user: (userString !== null && JSON.parse(userString).expiresAt > Math.floor(Date.now() / 1000))
       ? JSON.parse(userString) : {
+        id: null,
         email: null,
         role: null,
         token: null,
@@ -67,6 +68,7 @@ export default new Vuex.Store({
           })
           .then((response) => {
             const user = {
+              id: response.data.id,
               email: payload.email,
               role: response.data.role,
               token: response.data.token,
@@ -92,6 +94,7 @@ export default new Vuex.Store({
         })
           .then(() => {
             commit('setUser', {
+              id: null,
               email: null,
               role: null,
               token: null,
