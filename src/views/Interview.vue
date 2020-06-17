@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-content>
+    <v-main>
       <golden-layout :hasHeaders="false" class="hscreen">
         <gl-row>
           <gl-col>
@@ -52,7 +52,7 @@
           </gl-col>
         </gl-row>
       </golden-layout>
-    </v-content>
+    </v-main>
   </v-app>
 </template>
 

@@ -67,11 +67,11 @@
         </v-menu>
       </v-toolbar-items>
     </v-app-bar>
-    <v-content>
+    <v-main>
       <v-container fluid>
         <router-view></router-view>
       </v-container>
-    </v-content>
+    </v-main>
   </v-app>
 </template>
 
