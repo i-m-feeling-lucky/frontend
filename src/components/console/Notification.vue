@@ -5,6 +5,29 @@
         通知（低优先级）
       </v-card-text>
     </v-card>
+    <v-card class="elevation-0">
+    <v-card-text class="pa-0">
+      <v-list two-line class="pa-0">
+        <template v-for="(item, index) in items">
+          <v-subheader v-if="item.header" :key="item.header">
+            {{ item.header }}
+          </v-subheader>
+          <v-divider v-else-if="item.divider" :key="index"></v-divider>
+          <v-list-item v-else :key="item.title">
+            <v-list-item-content>
+              <v-list-item-subtitle v-html="item.title"></v-list-item-subtitle>
+            </v-list-item-content>
+            <v-list-item-action class="caption">
+              {{ item.timeLabel }}
+            </v-list-item-action>
+          </v-list-item>
+        </template>
+      </v-list>
+      <v-divider></v-divider>
+      <v-btn block text class="ma-0">All</v-btn>
+      <v-divider></v-divider>
+    </v-card-text>
+  </v-card>
   </div>
 </template>
 
@@ -15,6 +38,31 @@ export default Vue.extend({
   name: 'Notification',
   metaInfo: {
     title: '通知',
+  },
+  data() {
+    return {
+      items: [
+        {
+          title: '您有新的面试，面试人：张三',
+          color: 'light-green',
+          timeLabel: 'Just now',
+        },
+        { divider: true, inset: true },
+        {
+          title: '您有新的面试，面试人：李四',
+          color: 'light-blue',
+          timeLabel: '2 min ago',
+        },
+        { divider: true, inset: true },
+        {
+          title: '一教炸啦',
+          color: 'light-blue',
+          timeLabel: '2 min ago',
+        },
+      ],
+    };
+  },
+  methods: {
   },
 });
 </script>

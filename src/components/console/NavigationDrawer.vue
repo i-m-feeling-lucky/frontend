@@ -1,7 +1,7 @@
 <template>
   <v-navigation-drawer v-model="localDrawer" :clipped="$vuetify.breakpoint.lgAndUp" app>
     <v-list>
-      <template v-for="item in items">
+      <template v-for="item in consoleItems[role]">
         <v-row v-if="item.heading" :key="item.heading">
           <v-col cols="6">
             <v-subheader>
@@ -30,7 +30,14 @@
             link
           >
             <v-list-item-action v-if="child.icon">
-              <v-icon>{{ child.icon }}</v-icon>
+              <v-badge
+                :content="child.badge"
+                :value="child.badge!==undefined"
+                color="red"
+                overlap
+              >
+                <v-icon>{{ child.icon }}</v-icon>
+              </v-badge>
             </v-list-item-action>
             <v-list-item-content>
               <v-list-item-title>
@@ -43,11 +50,19 @@
           v-else
           :key="item.text"
           :to="item.to"
+          v-on="item.logout ? { click: onLogout } : {}"
           exact
           link
         >
           <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
+            <v-badge
+              :content="item.badge"
+              :value="item.badge!==undefined"
+              color="red"
+              overlap
+            >
+              <v-icon>{{ item.icon }}</v-icon>
+            </v-badge>
           </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title>
@@ -62,13 +77,194 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import { mapMutations, mapActions } from 'vuex';
 
 export default Vue.extend({
   name: 'Drawer',
-  props: ['items', 'value'],
+  props: ['role', 'value'],
   data() {
     return {
       localDrawer: this.value,
+      consoleItems: {
+        admin: [
+          { heading: '业务管理' },
+          {
+            icon: 'mdi-view-dashboard',
+            text: '仪表盘',
+            to: '/console',
+          },
+          {
+            icon: 'mdi-account-box-multiple',
+            text: '用户管理',
+            model: false,
+            children: [
+              {
+                icon: 'mdi-duck',
+                text: 'HR',
+                to: '/console/user-management/HR',
+              },
+              {
+                icon: 'mdi-duck',
+                text: '面试官',
+                to: '/console/user-management/interviewer',
+              },
+              {
+                icon: 'mdi-duck',
+                text: '候选人',
+                to: '/console/user-management/interviewee',
+              },
+            ],
+          },
+          {
+            icon: 'mdi-code-greater-than',
+            text: '题库管理',
+            to: '/console/problem-management',
+          },
+          { heading: '其他' },
+          {
+            icon: 'mdi-bell',
+            text: '通知',
+            to: '/console/notification',
+            badge: 42,
+          },
+          {
+            icon: 'mdi-card-account-details',
+            text: '个人信息',
+            to: '/console/profile',
+          },
+          {
+            icon: 'mdi-shield-key',
+            text: '密码修改',
+            to: '/console/password',
+          },
+          {
+            icon: 'mdi-logout',
+            text: '退出',
+            logout: true,
+          },
+        ],
+        HR: [
+          { heading: '业务管理' },
+          {
+            icon: 'mdi-view-dashboard',
+            text: '仪表盘',
+            to: '/console',
+          },
+          {
+            icon: 'mdi-account-box-multiple',
+            text: '用户管理',
+            model: false,
+            children: [
+              {
+                icon: 'mdi-duck',
+                text: '面试官',
+                to: '/console/user-management/interviewer',
+              },
+              {
+                icon: 'mdi-duck',
+                text: '候选人',
+                to: '/console/user-management/interviewee',
+              },
+            ],
+          },
+          {
+            icon: 'mdi-duck',
+            text: '面试管理',
+            model: false,
+            children: [
+              {
+                icon: 'mdi-ray-start',
+                text: '未开始',
+                to: '/console/interview-management/upcoming',
+              },
+              {
+                icon: 'mdi-ray-vertex',
+                text: '进行中',
+                to: '/console/interview-management/active',
+              },
+              {
+                icon: 'mdi-ray-end',
+                text: '已结束',
+                to: '/console/interview-management/ended',
+              },
+            ],
+          },
+          { heading: '其他' },
+          {
+            icon: 'mdi-bell',
+            text: '通知',
+            to: '/console/notification',
+            badge: '99+',
+          },
+          {
+            icon: 'mdi-card-account-details',
+            text: '个人信息',
+            to: '/console/profile',
+          },
+          {
+            icon: 'mdi-shield-key',
+            text: '密码修改',
+            to: '/console/password',
+          },
+          {
+            icon: 'mdi-logout',
+            text: '退出',
+            logout: true,
+          },
+        ],
+        interviewer: [
+          { heading: '业务管理' },
+          {
+            icon: 'mdi-view-dashboard',
+            text: '仪表盘',
+            to: '/console',
+          },
+          {
+            icon: 'mdi-duck',
+            text: '面试管理',
+            model: false,
+            children: [
+              {
+                icon: 'mdi-ray-start',
+                text: '未开始',
+                to: '/console/interview-management/upcoming',
+              },
+              {
+                icon: 'mdi-ray-vertex',
+                text: '进行中',
+                to: '/console/interview-management/active',
+              },
+            ],
+          },
+          { heading: '其他' },
+          {
+            icon: 'mdi-bell',
+            text: '通知',
+            to: '/console/notification',
+            badge: 23,
+          },
+          {
+            icon: 'mdi-card-account-details',
+            text: '个人信息',
+            to: '/console/profile',
+          },
+          {
+            icon: 'mdi-clock',
+            text: '空闲时间修改',
+            to: '/console/free-time',
+          },
+          {
+            icon: 'mdi-shield-key',
+            text: '密码修改',
+            to: '/console/password',
+          },
+          {
+            icon: 'mdi-logout',
+            text: '退出',
+            logout: true,
+          },
+        ],
+      },
     };
   },
   watch: {
@@ -77,6 +273,19 @@ export default Vue.extend({
     },
     localDrawer() {
       this.$emit('input', this.localDrawer);
+    },
+  },
+  methods: {
+    ...mapMutations(['setError']),
+    ...mapActions(['logout']),
+    onLogout() {
+      this.logout()
+        .then(() => {
+          this.$router.push({ path: '/login' });
+        })
+        .catch((error) => {
+          this.setError(error.message);
+        });
     },
   },
 });
