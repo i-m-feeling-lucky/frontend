@@ -5,14 +5,15 @@
       class="mx-auto"
     >
       <v-img
-        src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg"
+        src="@/assets/server-room.jpg"
         height="200px"
         dark
       >
-        <v-row align="end" class="fill-height">
-          <v-col class="py-8">
-            <div class="text-h5 px-5">个人信息</div>
+        <v-row>
+          <v-col cols="12" class="pl-10 pt-15">
+            <v-icon size="70">mdi-card-account-details</v-icon>
           </v-col>
+          <v-col cols="12" class="pl-8 pt-0 text-h5">个人信息</v-col>
         </v-row>
       </v-img>
 
