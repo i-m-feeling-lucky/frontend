@@ -111,5 +111,34 @@ export default new Vuex.Store({
           });
       });
     },
+    changePassword({ getters }, payload) {
+      return new Promise((resolve, reject) => {
+        axios.put(`${API_URL}/user/${getters.getUser.id}/password`,
+        /* eslint-disable @typescript-eslint/camelcase */
+          {
+            old_password: payload.oldPassword,
+            new_password: payload.newPassword,
+          },
+          {
+            headers: { 'X-Token': getters.getUser.token },
+          })
+          .then((response) => response.status)
+          .catch((error) => {
+            if (error.response) {
+              // The request was made and the server responded with a status code
+              // that falls out of the range of 2xx
+              reject(new Error(`${error.response.status.toString()} ${error.response.statusText}`));
+            } else if (error.request) {
+              // The request was made but no response was received
+              // `error.request` is an instance of XMLHttpRequest in the browser
+              // and an instance of http.ClientRequest in node.js
+              reject(new Error('服务器无响应'));
+            } else {
+              // Something happened in setting up the request that triggered an Error
+              reject(new Error('生成请求时发生异常'));
+            }
+          });
+      });
+    },
   },
 });
