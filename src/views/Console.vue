@@ -24,7 +24,7 @@
       <v-spacer />
       <v-toolbar-items>
         <v-btn icon @click="toggleFullscreen">
-          <v-icon v-if="inFullscreen">mdi-fullscreen-exit</v-icon>
+          <v-icon v-if="getFullScreen">mdi-fullscreen-exit</v-icon>
           <v-icon v-else>mdi-fullscreen</v-icon>
         </v-btn>
       </v-toolbar-items>
@@ -48,7 +48,7 @@ export default Vue.extend({
     NavigationDrawer,
   },
   computed: {
-    ...mapGetters(['logged', 'getUserRoleString', 'getError']),
+    ...mapGetters(['logged', 'getUserRoleString', 'getError', 'getFullScreen']),
     siteName() {
       return process.env.VUE_APP_SITE_NAME;
     },
@@ -57,18 +57,17 @@ export default Vue.extend({
     return {
       // Using null to initialize the drawer as closed on mobile and as open on desktop
       drawer: null,
-      inFullscreen: false,
     };
   },
   methods: {
-    ...mapMutations(['setError']),
+    ...mapMutations(['setError', 'setFullScreen']),
     toggleFullscreen() {
       if (document.fullscreenElement !== null) {
         document.exitFullscreen();
-        this.inFullscreen = false;
+        this.setFullScreen(false);
       } else {
         document.documentElement.requestFullscreen();
-        this.inFullscreen = true;
+        this.setFullScreen(true);
       }
     },
   },

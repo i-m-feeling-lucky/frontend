@@ -19,6 +19,7 @@ export default new Vuex.Store({
         token: null,
         expiresAt: null,
       },
+    fullScreen: false,
     info: '',
     success: '',
     error: '',
@@ -33,6 +34,9 @@ export default new Vuex.Store({
     getUserRoleString(state) {
       return roleMap[state.user.role];
     },
+    getFullScreen(state) {
+      return state.fullScreen;
+    },
     getInfo(state) {
       return state.info;
     },
@@ -46,6 +50,9 @@ export default new Vuex.Store({
   mutations: {
     setUser(state, payload) {
       state.user = payload;
+    },
+    setFullScreen(state, payload) {
+      state.fullScreen = payload;
     },
     setInfo(state, payload) {
       state.info = payload;

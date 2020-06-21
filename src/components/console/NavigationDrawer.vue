@@ -276,11 +276,15 @@ export default Vue.extend({
     },
   },
   methods: {
-    ...mapMutations(['setError']),
+    ...mapMutations(['setError', 'setFullScreen']),
     ...mapActions(['logout']),
     onLogout() {
       this.logout()
         .then(() => {
+          if (document.fullscreenElement !== null) {
+            document.exitFullscreen();
+            this.setFullScreen(false);
+          }
           this.$router.push({ path: '/login' });
         })
         .catch((error) => {
