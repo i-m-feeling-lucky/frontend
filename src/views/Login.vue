@@ -4,12 +4,12 @@
       <v-container class="fill-height" fluid>
         <v-row align="center" justify="center">
           <v-col cols="12" sm="8" md="4">
-            <v-alert icon="mdi-duck">
-              测试用户<br />
-              [ { email: 'admin@lucky.com', password: 'admin', }, { email:
-              'hr@lucky.com', password: 'hr', }, { email: 'hr2@lucky.com',
-              password: 'hr', }, { email: 'interviewer@lucky.com', password:
-              'interviewer', }, ]
+            <v-alert colored-border border="left" type="info" elevation="3">
+              测试用户<br/>
+              [ { email: 'admin@lucky.com', password: 'admin', },<br/>
+              { email: 'hr@lucky.com', password: 'hr', },<br/>
+              { email: 'hr2@lucky.com', password: 'hr2', },<br/>
+              { email: 'interviewer@lucky.com', password: 'interviewer', }, ]
             </v-alert>
             <v-card class="elevation-12 mb-6">
               <v-toolbar color="primary" dark flat>
@@ -23,6 +23,7 @@
                     v-model="email"
                     prepend-icon="mdi-email"
                     type="email"
+                    clearable
                   />
 
                   <v-text-field
@@ -34,6 +35,7 @@
                     :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
                     :type="showPassword ? 'text' : 'password'"
                     @click:append="showPassword = !showPassword"
+                    clearable
                   />
                 </v-form>
               </v-card-text>

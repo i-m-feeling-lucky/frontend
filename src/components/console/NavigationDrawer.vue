@@ -1,6 +1,6 @@
 <template>
   <v-navigation-drawer v-model="localDrawer" :clipped="$vuetify.breakpoint.lgAndUp" app>
-    <v-list>
+    <v-list shaped>
       <template v-for="item in consoleItems[role]">
         <v-row v-if="item.heading" :key="item.heading">
           <v-col cols="6">
