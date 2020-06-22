@@ -1,16 +1,13 @@
 <template>
-  <v-card max-width="400" class="mx-auto">
+  <v-card max-width="600" class="mx-auto">
+
     <v-img
       src="@/assets/server-room.jpg"
-      height="200px"
-      dark
+      height="150"
+      class="align-end"
     >
-      <v-row>
-        <v-col cols="12" class="pl-10 pt-15">
-          <v-icon size="70">mdi-card-account-details</v-icon>
-        </v-col>
-        <v-col cols="12" class="pl-8 pt-0 text-h5">个人信息</v-col>
-      </v-row>
+      <v-icon dark size="70" class="ml-6">mdi-card-account-details</v-icon>
+      <v-card-title class="pt-0 pb-4 text-h5 white--text">个人信息</v-card-title>
     </v-img>
 
     <v-list two-line>

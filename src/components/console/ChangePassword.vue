@@ -1,12 +1,13 @@
 <template>
-  <v-card max-width="400" class="mx-auto">
+  <v-card max-width="600" class="mx-auto">
 
     <v-img
-      class="white--text align-end"
-      height="70"
       src="@/assets/vbanner.jpg"
+      height="150"
+      class="align-end"
     >
-      <v-card-title>密码修改</v-card-title>
+      <v-icon dark size="60" class="ml-7">mdi-shield-key</v-icon>
+      <v-card-title class="pt-1 pb-4 text-h5 white--text">密码修改</v-card-title>
     </v-img>
 
     <v-card-text>
