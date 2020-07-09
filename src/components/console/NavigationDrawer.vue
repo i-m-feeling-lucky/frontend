@@ -250,7 +250,7 @@ export default Vue.extend({
           },
           {
             icon: 'mdi-clock',
-            text: '空闲时间修改',
+            text: '空闲时间管理',
             to: '/console/free-time',
           },
           {
