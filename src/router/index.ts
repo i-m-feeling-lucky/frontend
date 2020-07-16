@@ -63,7 +63,7 @@ const routes: Array<RouteConfig> = [
       },
       {
         path: 'free-time',
-        component: () => import(/* webpackChunkName: "console-interviewer" */ '@/components/console/interviewer/ChangeFreeTime.vue'),
+        component: () => import(/* webpackChunkName: "console-interviewer" */ '@/components/console/interviewer/ManageFreeTime.vue'),
       },
     ],
   },

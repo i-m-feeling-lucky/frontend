@@ -74,7 +74,7 @@ export default Vue.extend({
     };
   },
   methods: {
-    ...mapMutations(['setError']),
+    ...mapMutations(['setError', 'setSuccess']),
     ...mapActions(['login']),
     onLogin() {
       this.loading = true;
@@ -95,6 +95,7 @@ export default Vue.extend({
   },
   created() {
     if (this.logged) {
+      this.setSuccess('已登录~');
       this.$router.push({ path: '/console' });
     }
   },
