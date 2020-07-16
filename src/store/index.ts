@@ -20,7 +20,7 @@ export default new Vuex.Store({
         expiresAt: null,
       },
     fullScreen: false,
-    freeTimeObject: {},
+    freeTimeArray: [],
     info: '',
     success: '',
     error: '',
@@ -38,8 +38,8 @@ export default new Vuex.Store({
     getFullScreen(state) {
       return state.fullScreen;
     },
-    getFreeTimeObject(state) {
-      return state.freeTimeObject;
+    getFreeTimeArray(state) {
+      return state.freeTimeArray;
     },
     getInfo(state) {
       return state.info;
@@ -58,8 +58,8 @@ export default new Vuex.Store({
     setFullScreen(state, payload) {
       state.fullScreen = payload;
     },
-    setFreeTimeObject(state, payload) {
-      state.freeTimeObject = payload;
+    setFreeTimeArray(state, payload) {
+      state.freeTimeArray = payload;
     },
     setInfo(state, payload) {
       state.info = payload;
@@ -162,15 +162,37 @@ export default new Vuex.Store({
             headers: { 'X-Token': getters.getUser.token },
           })
           .then((response) => {
-            commit('setFreeTimeObject', JSON.parse(response.data.free_time));
+            commit('setFreeTimeArray', JSON.parse(response.data.free_time));
             resolve();
           }).catch((error) => {
             if (error.response) {
               // TODO: 因为后端还没实现，所以在这里临时使用一些自己编的数据
-              commit('setFreeTimeObject', {
-                // eslint-disable-next-line
-                free_time: [['2020-07-10 09:30','2020-07-10 11:30'], ['2020-07-11 09:30','2020-07-11 11:30'], ['2020-07-13 09:30','2020-07-13 11:30']],
-              });
+              commit('setFreeTimeArray', [['2020-07-01T09:00:00', '2020-07-01T11:30:00'],
+                ['2020-07-01T14:00:00', '2020-07-01T17:30:00'],
+                ['2020-07-02T06:00:00', '2020-07-02T13:30:00'],
+                ['2020-07-03T15:00:00', '2020-07-03T18:30:00']]);
+              reject(new Error(`${error.response.status.toString()} ${error.response.statusText}`));
+            } else if (error.request) {
+              reject(new Error('服务器无响应'));
+            } else {
+              reject(new Error('生成请求时发生异常'));
+            }
+          });
+      });
+    },
+    changeFreeTime({ getters }, payload) {
+      return new Promise((resolve, reject) => {
+        axios.put(`${API_URL}/user/${getters.getUser.id}/free_time`,
+          {
+            // eslint-disable-next-line
+            free_time: payload,
+          },
+          {
+            headers: { 'X-Token': getters.getUser.token },
+          })
+          .then((response) => response.status)
+          .catch((error) => {
+            if (error.response) {
               reject(new Error(`${error.response.status.toString()} ${error.response.statusText}`));
             } else if (error.request) {
               reject(new Error('服务器无响应'));
