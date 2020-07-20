@@ -187,26 +187,12 @@
           </v-container>
         </v-form>
       </v-card-text>
-    <v-card-actions>
-      <v-row justify="center">
-        <v-btn color="primary" @click="onAddNewFreeTime"
-          :loading="loadingAdd" :disabled="loadingAdd">确定</v-btn>
-      </v-row>
-    </v-card-actions>
-    </v-card>
-    <v-card max-width="800" class="mx-auto">
-      <v-card-text class="text--primary">
-        面试官显示和更改个人空闲时间（高优先级）<br />
-        对空闲时间的约束：不能重叠，不能跨日<br />
-        <br />
-        TODO: 在某些浏览器里，日历里显示的时间比正确值晚8小时的问题<br />
-        <br />
-        moment(new Date('2000-01-01T10:00:00')).format()<br />{{test1}}<br />
-        moment('2000-01-01T10:00:00').format()<br />{{test2}}<br />
-        <br />
-        getFreeTimeArray<br />{{getFreeTimeArray}}<br />
-        this.events<br />{{this.events}}
-      </v-card-text>
+      <v-card-actions>
+        <v-row justify="center">
+          <v-btn color="primary" @click="onAddNewFreeTime"
+            :loading="loadingAdd" :disabled="loadingAdd">确定</v-btn>
+        </v-row>
+      </v-card-actions>
     </v-card>
   </div>
 </template>
@@ -242,20 +228,13 @@ export default Vue.extend({
       date: moment().format().slice(0, 10),
       newStartTime: '',
       newEndTime: '',
-
       menu1: false,
       menu2: false,
       menu3: false,
-
       newFreeTimeValid: false,
       newStartTimeRules: [
-        function (startTime: string) {
-          return !!startTime || '需要选择开始时间';
-        },
+        (startTime: string) => !!startTime || '需要选择开始时间',
       ],
-
-      test1: moment(new Date('2000-01-01T10:00:00')).format(),
-      test2: moment('2000-01-01T10:00:00').format(),
     };
   },
   computed: {
@@ -342,8 +321,8 @@ export default Vue.extend({
         && freeTime[i][1].slice(0, 10) <= this.rangeEndDate) {
           events.push({
             name: '空闲时间',
-            start: new Date(freeTime[i][0]),
-            end: new Date(freeTime[i][1]),
+            start: new Date(moment(freeTime[i][0]).format()),
+            end: new Date(moment(freeTime[i][1]).format()),
             color: 'green',
             timed: true,
           });
