@@ -63,10 +63,14 @@ export default Vue.extend({
     ...mapMutations(['setError', 'setFullScreen']),
     toggleFullscreen() {
       if (document.fullscreenElement !== null) {
-        document.exitFullscreen();
+        if (document.exitFullscreen !== undefined) {
+          document.exitFullscreen();
+        }
         this.setFullScreen(false);
       } else {
-        document.documentElement.requestFullscreen();
+        if (document.documentElement.requestFullscreen !== undefined) {
+          document.documentElement.requestFullscreen();
+        }
         this.setFullScreen(true);
       }
     },

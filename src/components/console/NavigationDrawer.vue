@@ -282,7 +282,9 @@ export default Vue.extend({
       this.logout()
         .then(() => {
           if (document.fullscreenElement !== null) {
-            document.exitFullscreen();
+            if (document.exitFullscreen !== undefined) {
+              document.exitFullscreen();
+            }
             this.setFullScreen(false);
           }
           this.$router.push({ path: '/login' });
