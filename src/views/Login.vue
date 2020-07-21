@@ -12,9 +12,14 @@
               { email: 'interviewer@lucky.com', password: 'interviewer', }, ]
             </v-alert>
             <v-card class="elevation-12 mb-6">
-              <v-toolbar color="primary" dark flat>
-                <v-toolbar-title>登录</v-toolbar-title>
-              </v-toolbar>
+              <v-img
+                src="@/assets/banner-legs.webp"
+                height="80"
+                class="align-end"
+                gradient="to top right, rgba(0,0,0,.8), rgba(0,0,0,0)"
+              >
+                <v-card-title class="text-h5 white--text">LUCKY 在线面试平台</v-card-title>
+              </v-img>
               <v-card-text>
                 <v-form>
                   <v-text-field

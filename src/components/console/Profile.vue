@@ -2,7 +2,7 @@
   <v-card max-width="600" class="mx-auto">
 
     <v-img
-      src="@/assets/server-room.jpg"
+      src="@/assets/banner-server-room.webp"
       height="150"
       class="align-end"
     >

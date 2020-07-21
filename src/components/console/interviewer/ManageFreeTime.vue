@@ -248,10 +248,10 @@ export default Vue.extend({
       return newEndTimeRules;
     },
     newFreeTimeStart(): string {
-      return `${this.date}T${this.newStartTime}`;
+      return `${this.date}T${this.newStartTime}:00`;
     },
     newFreeTimeEnd(): string {
-      return `${this.date}T${this.newEndTime}`;
+      return `${this.date}T${this.newEndTime}:00`;
     },
   },
   methods: {

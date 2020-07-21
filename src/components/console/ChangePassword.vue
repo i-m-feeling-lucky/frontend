@@ -2,9 +2,10 @@
   <v-card max-width="600" class="mx-auto">
 
     <v-img
-      src="@/assets/vbanner.jpg"
+      src="@/assets/banner-keyboard.webp"
       height="150"
       class="align-end"
+      gradient="to top right, rgba(0,0,0,.8), rgba(0,0,0,0)"
     >
       <v-icon dark size="60" class="ml-7">mdi-shield-key</v-icon>
       <v-card-title class="pt-1 pb-4 text-h5 white--text">密码修改</v-card-title>
