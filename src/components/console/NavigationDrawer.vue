@@ -168,26 +168,9 @@ export default Vue.extend({
             ],
           },
           {
-            icon: 'mdi-duck',
+            icon: 'mdi-account-tie',
             text: '面试管理',
-            model: false,
-            children: [
-              {
-                icon: 'mdi-ray-start',
-                text: '未开始',
-                to: '/console/interview-management/upcoming',
-              },
-              {
-                icon: 'mdi-ray-vertex',
-                text: '进行中',
-                to: '/console/interview-management/active',
-              },
-              {
-                icon: 'mdi-ray-end',
-                text: '已结束',
-                to: '/console/interview-management/ended',
-              },
-            ],
+            to: '/console/interview-management-HR',
           },
           { heading: '其他' },
           {
@@ -220,21 +203,9 @@ export default Vue.extend({
             to: '/console',
           },
           {
-            icon: 'mdi-duck',
+            icon: 'mdi-account-tie',
             text: '面试管理',
-            model: false,
-            children: [
-              {
-                icon: 'mdi-ray-start',
-                text: '未开始',
-                to: '/console/interview-management/upcoming',
-              },
-              {
-                icon: 'mdi-ray-vertex',
-                text: '进行中',
-                to: '/console/interview-management/active',
-              },
-            ],
+            to: '/console/interview-management-interviewer',
           },
           { heading: '其他' },
           {

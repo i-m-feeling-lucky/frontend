@@ -34,16 +34,12 @@ const routes: Array<RouteConfig> = [
         component: () => import(/* webpackChunkName: "console" */ '@/components/console/UserManagementInterviewee.vue'),
       },
       {
-        path: 'interview-management/upcoming',
-        component: () => import(/* webpackChunkName: "console" */ '@/components/console/InterviewManagementUpcoming.vue'),
+        path: 'interview-management-HR',
+        component: () => import(/* webpackChunkName: "console-HR" */ '@/components/console/HR/InterviewManagementHR.vue'),
       },
       {
-        path: 'interview-management/active',
-        component: () => import(/* webpackChunkName: "console" */ '@/components/console/InterviewManagementActive.vue'),
-      },
-      {
-        path: 'interview-management/ended',
-        component: () => import(/* webpackChunkName: "console-HR" */ '@/components/console/HR/InterviewManagementEnded.vue'),
+        path: 'interview-management-interviewer',
+        component: () => import(/* webpackChunkName: "console-interviewer" */ '@/components/console/interviewer/InterviewManagementInterviewer.vue'),
       },
       {
         path: 'problem-management',

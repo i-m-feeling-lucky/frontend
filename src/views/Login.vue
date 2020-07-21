@@ -14,7 +14,7 @@
             <v-card class="elevation-12 mb-6">
               <v-img
                 src="@/assets/banner-legs.webp"
-                height="80"
+                height="90"
                 class="align-end"
                 gradient="to top right, rgba(0,0,0,.8), rgba(0,0,0,0)"
               >
