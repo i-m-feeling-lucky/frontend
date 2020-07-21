@@ -13,10 +13,10 @@
             </v-alert>
             <v-card class="elevation-12 mb-6">
               <v-img
-                src="@/assets/banner-legs.webp"
-                height="90"
+                src="@/assets/banner-legs.jpg"
+                height="100"
                 class="align-end"
-                gradient="to top right, rgba(0,0,0,.8), rgba(0,0,0,0)"
+                gradient="to top right, rgba(0,0,0,.7), rgba(0,0,0,0)"
               >
                 <v-card-title class="text-h5 white--text">LUCKY 在线面试平台</v-card-title>
               </v-img>

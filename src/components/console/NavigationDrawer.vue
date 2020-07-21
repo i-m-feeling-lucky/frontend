@@ -207,6 +207,11 @@ export default Vue.extend({
             text: '面试管理',
             to: '/console/interview-management-interviewer',
           },
+          {
+            icon: 'mdi-clock',
+            text: '空闲时间管理',
+            to: '/console/free-time',
+          },
           { heading: '其他' },
           {
             icon: 'mdi-bell',
@@ -218,11 +223,6 @@ export default Vue.extend({
             icon: 'mdi-card-account-details',
             text: '个人信息',
             to: '/console/profile',
-          },
-          {
-            icon: 'mdi-clock',
-            text: '空闲时间管理',
-            to: '/console/free-time',
           },
           {
             icon: 'mdi-shield-key',
@@ -252,10 +252,10 @@ export default Vue.extend({
     onLogout() {
       this.logout()
         .then(() => {
-          if (document.fullscreenElement !== null) {
-            if (document.exitFullscreen !== undefined) {
-              document.exitFullscreen();
-            }
+          if (document.exitFullscreen !== undefined
+            && document.fullscreenElement !== undefined
+            && document.fullscreenElement !== null) {
+            document.exitFullscreen();
             this.setFullScreen(false);
           }
           this.$router.push({ path: '/login' });

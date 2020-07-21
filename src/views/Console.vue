@@ -62,15 +62,14 @@ export default Vue.extend({
   methods: {
     ...mapMutations(['setError', 'setFullScreen']),
     toggleFullscreen() {
-      if (document.fullscreenElement !== null) {
-        if (document.exitFullscreen !== undefined) {
-          document.exitFullscreen();
-        }
+      if (document.exitFullscreen === undefined
+        || document.documentElement.requestFullscreen === undefined) {
+        this.setError('您的浏览器不支持全屏显示');
+      } else if (document.fullscreenElement !== undefined && document.fullscreenElement !== null) {
+        document.exitFullscreen();
         this.setFullScreen(false);
       } else {
-        if (document.documentElement.requestFullscreen !== undefined) {
-          document.documentElement.requestFullscreen();
-        }
+        document.documentElement.requestFullscreen();
         this.setFullScreen(true);
       }
     },
