@@ -11,16 +11,9 @@
       dark
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-toolbar-title style="width: 300px" class="ml-0 pl-4">
-        <span class="hidden-sm-and-down">{{ siteName }}</span>
+      <v-toolbar-title style="width: 300px" class="ml-0 pl-3">
+        <span>{{ siteName }}</span>
       </v-toolbar-title>
-      <v-text-field
-        solo-inverted
-        hide-details
-        prepend-inner-icon="mdi-magnify"
-        label="搜索..."
-        class="hidden-sm-and-down"
-      />
       <v-spacer />
       <v-toolbar-items>
         <v-btn icon @click="toggleFullscreen">
