@@ -5,7 +5,7 @@
         <v-expansion-panel-header>
           <v-row align="center" no-gutters>
             <v-icon color="red" class="mr-5">mdi-ray-start</v-icon>
-            <strong>未开始</strong>
+            <strong>分配面试</strong>
             <span v-if="upcomingTotal" class="grey--text">
               &nbsp;({{ upcomingTotal }})
             </span>
@@ -14,7 +14,7 @@
         <v-expansion-panel-content>
           <v-divider></v-divider>
           <v-card-text>
-            这里是未开始的面试的列表
+            在这里分配面试
           </v-card-text>
         </v-expansion-panel-content>
       </v-expansion-panel>
@@ -22,7 +22,7 @@
         <v-expansion-panel-header>
           <v-row align="center" no-gutters>
             <v-icon color="orange" class="mr-5">mdi-ray-vertex</v-icon>
-            <strong>进行中</strong>
+            <strong>进行中的面试</strong>
             <span v-if="activeTotal" class="grey--text">
               &nbsp;({{ activeTotal }})
             </span>
@@ -39,7 +39,7 @@
         <v-expansion-panel-header>
           <v-row align="center" no-gutters>
             <v-icon color="green" class="mr-5">mdi-ray-end</v-icon>
-            <strong>已结束</strong>
+            <strong>可回溯的面试</strong>
             <span v-if="endedTotal" class="grey--text">
               &nbsp;({{ endedTotal }})
             </span>
@@ -48,7 +48,7 @@
         <v-expansion-panel-content>
           <v-divider></v-divider>
           <v-card-text>
-            这里是已结束的面试的列表
+            这里是已结束的，HR可以回溯的面试的列表
           </v-card-text>
         </v-expansion-panel-content>
       </v-expansion-panel>

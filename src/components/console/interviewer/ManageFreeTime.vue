@@ -352,7 +352,9 @@ export default Vue.extend({
         for (let i = 0; i < this.getFreeTimeArray.length; i += 1) {
           if (this.date === this.getFreeTimeArray[i][0].slice(0, 10)
             && (moment(this.newFreeTimeStart).isBetween(this.getFreeTimeArray[i][0], this.getFreeTimeArray[i][1], 'second', '[]')
-            || moment(this.newFreeTimeEnd).isBetween(this.getFreeTimeArray[i][0], this.getFreeTimeArray[i][1], 'second', '[]'))) {
+            || moment(this.newFreeTimeEnd).isBetween(this.getFreeTimeArray[i][0], this.getFreeTimeArray[i][1], 'second', '[]')
+            || (moment(this.newFreeTimeStart).isBefore(this.getFreeTimeArray[i][0], 'second')
+            && moment(this.newFreeTimeEnd).isAfter(this.getFreeTimeArray[i][1], 'second')))) {
             this.setError('与已存在的空闲时间有重叠！');
             this.loadingAdd = false;
             return;
