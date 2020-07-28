@@ -14,8 +14,8 @@
     <v-card-text class="pa-0">
       <v-form>
         <v-container>
-          <v-row>
-            <v-col cols="10" class="mx-auto py-0">
+          <v-row no-gutters>
+            <v-col cols="10" class="mx-auto">
               <v-text-field
                 label="旧密码"
                 v-model="oldPassword"
@@ -27,8 +27,8 @@
               />
             </v-col>
           </v-row>
-          <v-row>
-            <v-col cols="10" class="mx-auto py-0">
+          <v-row no-gutters>
+            <v-col cols="10" class="mx-auto">
               <v-text-field
                 label="新密码"
                 v-model="newPassword"

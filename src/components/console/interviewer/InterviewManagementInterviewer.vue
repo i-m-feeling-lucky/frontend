@@ -1,6 +1,6 @@
 <template>
   <v-row no-gutters>
-    <v-col class="mx-auto" sm="7" md="5">
+    <v-col class="mx-auto" sm="8" md="5">
       <v-expansion-panels popout multiple v-model="panel">
 
         <v-expansion-panel hide-actions>
@@ -114,7 +114,7 @@
               </v-list-item>
             </v-list>
             <v-card-text class="text-center text--secondary" v-else>
-              没有进行中的面试~
+              没有进行中的面试
             </v-card-text>
           </v-expansion-panel-content>
         </v-expansion-panel>
@@ -172,7 +172,7 @@
               </v-list-item>
             </v-list>
             <v-card-text class="text-center text--secondary" v-else>
-              还从来没有完成过面试~
+              还从来没有完成过面试
             </v-card-text>
           </v-expansion-panel-content>
         </v-expansion-panel>
@@ -198,8 +198,6 @@ export default Vue.extend({
   data() {
     return {
       panel: [] as number[],
-      activeTotal: 3,
-      endedTotal: 7,
       interviews: [] as any,
     };
   },
