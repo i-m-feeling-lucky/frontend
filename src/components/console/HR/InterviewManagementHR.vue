@@ -15,46 +15,48 @@
           </v-expansion-panel-header>
           <v-expansion-panel-content>
             <v-divider></v-divider>
-            <v-list two-line class="pl-sm-4" v-if="this.upcomingInterviews.length">
-               <!-- TODO: HR进入面试房间的token如何提供？目前这里写的这个是面试官的token，不是HR的 -->
-              <v-list-item
-                v-for="item in upcomingInterviews"
-                :key="item.id"
-                @click="$router.push({path: `/interview/${getUser.id}?token=${item.token}`})"
-                class="pa-0"
-              >
-                <v-list-item-avatar>
-                  <v-icon class="grey lighten-1 white--text">
-                    mdi-account-tie
-                  </v-icon>
-                </v-list-item-avatar>
+            <v-list two-line class="px-sm-4" v-if="upcomingInterviews.length">
+              <template v-for="item in upcomingInterviews">
+                <!-- TODO: HR进入面试房间的token如何提供？目前这里写的这个是面试官的token，不是HR的 -->
+                <v-list-item
+                  :key="item.id"
+                  @click="$router.push({path: `/interview/${getUser.id}?token=${item.token}`})"
+                  class="pa-0"
+                >
+                  <v-list-item-avatar>
+                    <v-icon class="grey lighten-1 white--text">
+                      mdi-account-tie
+                    </v-icon>
+                  </v-list-item-avatar>
 
-                <v-list-item-content>
-                   <v-list-item-title>
-                    {{item.interviewee}}
-                  </v-list-item-title>
-                  <v-list-item-subtitle class="text-subtitle-2">
-                    {{unixToString(item.start_time)}}
-                    <span class="text-center">
-                      <v-chip
-                        small
-                        color="green lighten-1"
-                        text-color="white"
-                      >
-                        <v-icon left size="17">mdi-clock-time-two-outline</v-icon>
-                        {{item.length}}分钟
-                      </v-chip>
-                    </span>
-                  </v-list-item-subtitle>
-                </v-list-item-content>
-                <!--
-                <v-list-item-action>
-                  <v-btn icon>
-                    <v-icon color="blue lighten-1">mdi-information</v-icon>
-                  </v-btn>
-                </v-list-item-action>
-                -->
-              </v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      {{item.interviewee}}
+                    </v-list-item-title>
+                    <v-list-item-subtitle class="text-subtitle-2">
+                      {{unixToString(item.start_time)}}
+                      <span class="text-center">
+                        <v-chip
+                          small
+                          color="green lighten-1"
+                          text-color="white"
+                        >
+                          <v-icon left size="17">mdi-clock-time-two-outline</v-icon>
+                          {{item.length}}分钟
+                        </v-chip>
+                      </span>
+                    </v-list-item-subtitle>
+                  </v-list-item-content>
+                  <!--
+                  <v-list-item-action>
+                    <v-btn icon>
+                      <v-icon color="blue lighten-1">mdi-information</v-icon>
+                    </v-btn>
+                  </v-list-item-action>
+                  -->
+                </v-list-item>
+                <v-divider :key="item.token"></v-divider>
+              </template>
             </v-list>
             <v-card-text class="text-center text--secondary" v-else>
               没有待开始的面试哦~
@@ -74,45 +76,47 @@
           </v-expansion-panel-header>
           <v-expansion-panel-content>
             <v-divider></v-divider>
-            <v-list two-line class="pl-sm-4" v-if="this.activeInterviews.length">
-              <v-list-item
-                v-for="item in activeInterviews"
-                :key="item.id"
-                @click="$router.push({path: `/interview/${getUser.id}?token=${item.token}`})"
-                class="pa-0"
-              >
-                <v-list-item-avatar>
-                  <v-icon class="grey lighten-1 white--text">
-                    mdi-account-tie
-                  </v-icon>
-                </v-list-item-avatar>
+            <v-list two-line class="px-sm-4" v-if="activeInterviews.length">
+              <template v-for="item in activeInterviews">
+                <v-list-item
+                  :key="item.id"
+                  @click="$router.push({path: `/interview/${getUser.id}?token=${item.token}`})"
+                  class="pa-0"
+                >
+                  <v-list-item-avatar>
+                    <v-icon class="grey lighten-1 white--text">
+                      mdi-account-tie
+                    </v-icon>
+                  </v-list-item-avatar>
 
-                <v-list-item-content>
-                   <v-list-item-title>
-                    {{item.interviewee}}
-                  </v-list-item-title>
-                  <v-list-item-subtitle class="text-subtitle-2">
-                    {{unixToString(item.start_time)}}
-                    <span class="text-center">
-                      <v-chip
-                        small
-                        color="green"
-                        text-color="white"
-                      >
-                        <v-icon left size="17">mdi-clock-time-two-outline</v-icon>
-                        {{item.length}}分钟
-                      </v-chip>
-                    </span>
-                  </v-list-item-subtitle>
-                </v-list-item-content>
-                <!--
-                <v-list-item-action>
-                  <v-btn icon>
-                    <v-icon color="blue lighten-1">mdi-information</v-icon>
-                  </v-btn>
-                </v-list-item-action>
-                -->
-              </v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      {{item.interviewee}}
+                    </v-list-item-title>
+                    <v-list-item-subtitle class="text-subtitle-2">
+                      {{unixToString(item.start_time)}}
+                      <span class="text-center">
+                        <v-chip
+                          small
+                          color="green"
+                          text-color="white"
+                        >
+                          <v-icon left size="17">mdi-clock-time-two-outline</v-icon>
+                          {{item.length}}分钟
+                        </v-chip>
+                      </span>
+                    </v-list-item-subtitle>
+                  </v-list-item-content>
+                  <!--
+                  <v-list-item-action>
+                    <v-btn icon>
+                      <v-icon color="blue lighten-1">mdi-information</v-icon>
+                    </v-btn>
+                  </v-list-item-action>
+                  -->
+                </v-list-item>
+                <v-divider :key="item.token"></v-divider>
+              </template>
             </v-list>
             <v-card-text class="text-center text--secondary" v-else>
               没有进行中的面试
@@ -132,45 +136,47 @@
           </v-expansion-panel-header>
           <v-expansion-panel-content>
             <v-divider></v-divider>
-            <v-list two-line class="pl-sm-4" v-if="this.endedInterviews.length">
-              <v-list-item
-                v-for="item in endedInterviews"
-                :key="item.id"
-                @click="$router.push({path: `/interview/${getUser.id}?token=${item.token}`})"
-                class="pa-0"
-              >
-                <v-list-item-avatar>
-                  <v-icon class="grey lighten-1 white--text">
-                    mdi-account-tie
-                  </v-icon>
-                </v-list-item-avatar>
+            <v-list two-line class="px-sm-4" v-if="endedInterviews.length">
+              <template v-for="item in endedInterviews">
+                <v-list-item
+                  :key="item.id"
+                  @click="$router.push({path: `/interview/${getUser.id}?token=${item.token}`})"
+                  class="pa-0"
+                >
+                  <v-list-item-avatar>
+                    <v-icon class="grey lighten-1 white--text">
+                      mdi-account-tie
+                    </v-icon>
+                  </v-list-item-avatar>
 
-                <v-list-item-content>
-                   <v-list-item-title>
-                    {{item.interviewee}}
-                  </v-list-item-title>
-                  <v-list-item-subtitle class="text-subtitle-2">
-                    {{unixToString(item.start_time)}}
-                    <span class="text-center">
-                      <v-chip
-                        small
-                        color="grey"
-                        text-color="white"
-                      >
-                        <v-icon left size="17">mdi-clock-time-two-outline</v-icon>
-                        {{item.length}}分钟
-                      </v-chip>
-                    </span>
-                  </v-list-item-subtitle>
-                </v-list-item-content>
-                <!--
-                <v-list-item-action>
-                  <v-btn icon>
-                    <v-icon color="blue lighten-1">mdi-information</v-icon>
-                  </v-btn>
-                </v-list-item-action>
-                -->
-              </v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      {{item.interviewee}}
+                    </v-list-item-title>
+                    <v-list-item-subtitle class="text-subtitle-2">
+                      {{unixToString(item.start_time)}}
+                      <span class="text-center">
+                        <v-chip
+                          small
+                          color="grey"
+                          text-color="white"
+                        >
+                          <v-icon left size="17">mdi-clock-time-two-outline</v-icon>
+                          {{item.length}}分钟
+                        </v-chip>
+                      </span>
+                    </v-list-item-subtitle>
+                  </v-list-item-content>
+                  <!--
+                  <v-list-item-action>
+                    <v-btn icon>
+                      <v-icon color="blue lighten-1">mdi-information</v-icon>
+                    </v-btn>
+                  </v-list-item-action>
+                  -->
+                </v-list-item>
+                <v-divider :key="item.token"></v-divider>
+              </template>
             </v-list>
             <v-card-text class="text-center text--secondary" v-else>
               无数据
@@ -245,7 +251,7 @@ const API_URL = process.env.VUE_APP_API_URL;
 export default Vue.extend({
   name: 'InterviewManagementHR',
   metaInfo: {
-    title: 'HR的面试',
+    title: 'HR的面试管理',
   },
   data() {
     return {
@@ -303,89 +309,89 @@ export default Vue.extend({
           (interview: any) => interview.hr === this.getUser.id,
         );
         this.panel = [0, 1];
+        // TODO: 因为后端还没实现，所以在这里临时使用一些自己编的数据
+        this.interviews = [
+          {
+            id: 1,
+            hr: 7,
+            interviewer: 99,
+            interviewee: 'abc@abc.com',
+            token: 'testtoken1',
+            // eslint-disable-next-line
+            start_time: moment('2020-07-25T07:00:00').unix(), // 时间戳，格林威治时间1970年1月1日0时0分0秒至今的秒数
+            length: 30, // 面试时长（分钟）
+            status: 'upcoming',
+          },
+          {
+            id: 2,
+            hr: 6,
+            interviewer: 8,
+            interviewee: 'jackweller@gmail.com',
+            token: 'testtoken2',
+            // eslint-disable-next-line
+            start_time: moment('2020-07-27T08:00:00').unix(),
+            length: 30,
+            status: 'ended',
+          },
+          {
+            id: 3,
+            hr: 6,
+            interviewer: 8,
+            interviewee: 'yusanshi@163.com',
+            token: 'testtoken3',
+            // eslint-disable-next-line
+            start_time: moment('2020-07-27T09:30:00').unix(),
+            length: 60,
+            status: 'ended',
+          },
+          {
+            id: 4,
+            hr: 6,
+            interviewer: 8,
+            interviewee: 'anothertest@gmail.com',
+            token: 'testtoken4',
+            // eslint-disable-next-line
+            start_time: moment('2020-07-28T13:00:00').unix(),
+            length: 40,
+            status: 'ended',
+          },
+          {
+            id: 5,
+            hr: 6,
+            interviewer: 8,
+            interviewee: 'fortest@126.com',
+            token: 'testtoken5',
+            // eslint-disable-next-line
+            start_time: moment('2020-07-28T16:00:00').unix(),
+            length: 50,
+            status: 'ended',
+          },
+          {
+            id: 6,
+            hr: 6,
+            interviewer: 8,
+            interviewee: 'anothertest@gmail.com',
+            token: 'testtoken6',
+            // eslint-disable-next-line
+            start_time: moment('2020-07-25T13:00:00').unix(),
+            length: 40,
+            status: 'active',
+          },
+          {
+            id: 7,
+            hr: 6,
+            interviewer: 8,
+            interviewee: 'fortest@126.com',
+            token: 'testtoken7',
+            // eslint-disable-next-line
+            start_time: moment('2020-05-01T16:00:00').unix(),
+            length: 50,
+            status: 'ended',
+          },
+        ].filter((interview) => interview.hr === this.getUser.id);
       }).catch((error) => {
         if (error.response) {
           this.setError(`Error: ${error.response.status.toString()} ${error.response.statusText}`);
-          // TODO: 因为后端还没实现，所以在这里临时使用一些自己编的数据
-          this.interviews = [
-            {
-              id: 1,
-              hr: 7,
-              interviewer: 99,
-              interviewee: 'abc@abc.com',
-              token: 'testtoken1',
-              // eslint-disable-next-line
-              start_time: moment('2020-07-25T07:00:00').unix(), // 时间戳，格林威治时间1970年1月1日0时0分0秒至今的秒数
-              length: 30, // 面试时长（分钟）
-              status: 'upcoming',
-            },
-            {
-              id: 2,
-              hr: 6,
-              interviewer: 8,
-              interviewee: 'jackweller@gmail.com',
-              token: 'testtoken2',
-              // eslint-disable-next-line
-              start_time: moment('2020-07-27T08:00:00').unix(),
-              length: 30,
-              status: 'ended',
-            },
-            {
-              id: 3,
-              hr: 6,
-              interviewer: 8,
-              interviewee: 'yusanshi@163.com',
-              token: 'testtoken3',
-              // eslint-disable-next-line
-              start_time: moment('2020-07-27T09:30:00').unix(),
-              length: 60,
-              status: 'ended',
-            },
-            {
-              id: 4,
-              hr: 6,
-              interviewer: 8,
-              interviewee: 'anothertest@gmail.com',
-              token: 'testtoken4',
-              // eslint-disable-next-line
-              start_time: moment('2020-07-28T13:00:00').unix(),
-              length: 40,
-              status: 'ended',
-            },
-            {
-              id: 5,
-              hr: 6,
-              interviewer: 8,
-              interviewee: 'fortest@126.com',
-              token: 'testtoken5',
-              // eslint-disable-next-line
-              start_time: moment('2020-07-28T16:00:00').unix(),
-              length: 50,
-              status: 'ended',
-            },
-            {
-              id: 6,
-              hr: 6,
-              interviewer: 8,
-              interviewee: 'anothertest@gmail.com',
-              token: 'testtoken6',
-              // eslint-disable-next-line
-              start_time: moment('2020-07-25T13:00:00').unix(),
-              length: 40,
-              status: 'active',
-            },
-            {
-              id: 7,
-              hr: 6,
-              interviewer: 8,
-              interviewee: 'fortest@126.com',
-              token: 'testtoken7',
-              // eslint-disable-next-line
-              start_time: moment('2020-05-01T16:00:00').unix(),
-              length: 50,
-              status: 'ended',
-            },
-          ].filter((interview) => interview.hr === this.getUser.id);
         } else if (error.request) {
           this.setError('Error: 服务器无响应');
         } else {
