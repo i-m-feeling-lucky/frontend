@@ -152,20 +152,8 @@ export default Vue.extend({
           },
           {
             icon: 'mdi-account-box-multiple',
-            text: '用户管理',
-            model: false,
-            children: [
-              {
-                icon: 'mdi-duck',
-                text: '面试官',
-                to: '/console/user-management/interviewer',
-              },
-              {
-                icon: 'mdi-duck',
-                text: '候选人',
-                to: '/console/user-management/interviewee',
-              },
-            ],
+            text: '候选人管理',
+            to: '/console/user-management/interviewee',
           },
           {
             icon: 'mdi-account-tie',
