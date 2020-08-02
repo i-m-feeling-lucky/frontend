@@ -1,22 +1,12 @@
 <template>
  <v-row no-gutters>
-    <v-col class="mx-auto" cols="12" sm="10" md="9">
-
-      <v-card class="my-3">
-        <v-card-text class="text--primary">
-          HR 的候选人管理页面<br />
-          <br />
-          需要显示所有归此HR管的候选人的列表，其中需要展示（默认按候选人的邮箱字符串来排序）：<br />
-          <br />
-          邮箱<br />
-          此候选人的面试列表 其中每一个面试需要展示：时间、时长、面试官id、评分、评语<br />
-          此候选人的申请结果（待定、通过、拒绝。HR可修改!）<br />
-          <br />
-        </v-card-text>
-      </v-card>
-
-      <v-card class="my-3">
+    <v-col class="mx-auto" cols="12" sm="4" md="3">
+      <v-card>
+        <v-card-title class="pb-0">
+          候选人申请结果
+        </v-card-title>
         <v-list two-line class="px-sm-4" v-if="interviewees.length">
+          <v-divider></v-divider>
           <v-list-item
             v-for="item in interviewees"
             :key="item.email"
@@ -33,15 +23,33 @@
               <v-list-item-title>
                 {{item.email}}
               </v-list-item-title>
-              <v-list-item-subtitle class="text-subtitle-2">
-                <v-chip
-                  small
-                  color="green lighten-1"
-                  text-color="white"
+              <v-list-item-subtitle>
+                <v-chip-group
+                  v-model="item.application_result"
+                  mandatory
                 >
-                  <v-icon left size="17">mdi-clock-time-two-outline</v-icon>
-                  {{['待定','通过','拒绝'][item.application_result]}}
-                </v-chip>
+                  <v-chip
+                    small
+                    active-class="orange--text text--accent-4"
+                    @click.stop="chipPendingClicked(item.email)"
+                    v-show="item.application_result===0">
+                    待定
+                  </v-chip>
+                  <v-chip
+                    small
+                    active-class="green--text text--accent-4"
+                    @click.stop="chipApprovedClicked(item.email)"
+                    v-show="item.application_result===1">
+                    通过
+                  </v-chip>
+                  <v-chip
+                    small
+                    active-class="red--text text--accent-4"
+                    @click.stop="chipRejectedClicked(item.email)"
+                    v-show="item.application_result===2">
+                    拒绝
+                  </v-chip>
+                </v-chip-group>
               </v-list-item-subtitle>
             </v-list-item-content>
             <!--
@@ -57,14 +65,69 @@
           无数据~
         </v-card-text>
       </v-card>
+      <v-dialog v-model="dialogApplicationResult" max-width="310">
+        <v-card>
+          <v-card-title>
+            {{dialogTitle}}
+          </v-card-title>
+          <v-card-text>
+            {{dialogText}}
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
 
+            <v-btn
+              color="orange darken-1"
+              text
+              @click="dialogApplicationResult = false"
+              v-show="dialogStatus!==0"
+            >
+              待定
+            </v-btn>
+
+            <v-btn
+              color="green darken-1"
+              text
+              @click="dialogApplicationResult = false"
+              v-show="dialogStatus!==1"
+            >
+              通过
+            </v-btn>
+
+            <v-btn
+              color="red darken-1"
+              text
+              @click="dialogApplicationResult = false"
+              v-show="dialogStatus!==2"
+            >
+              拒绝
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-col>
+    <v-col class="mx-auto" cols="12" sm="7" md="8">
       <v-card>
         <v-data-table
           :headers="headers"
           :items="desserts"
-          :items-per-page="5"
+          :items-per-page="50"
           class="elevation-1"
         ></v-data-table>
+      </v-card>
+    </v-col>
+    <v-col class="mx-auto" cols="12">
+      <v-card>
+        <v-card-text class="text--primary">
+          HR 的候选人管理页面<br />
+          <br />
+          需要显示所有归此HR管的候选人的列表，其中需要展示（默认按候选人的邮箱字符串来排序）：<br />
+          <br />
+          邮箱<br />
+          此候选人的面试列表 其中每一个面试需要展示：时间、时长、面试官id、评分、评语<br />
+          此候选人的申请结果（待定、通过、拒绝。HR可修改!）<br />
+          <br />
+        </v-card-text>
       </v-card>
     </v-col>
  </v-row>
@@ -82,9 +145,37 @@ export default Vue.extend({
     intervieweeClicked() {
       console.log('interviewee clicked!');
     },
+    getColor(rate: number) {
+      return ['orange', 'green', 'red'][rate];
+    },
+    chipPendingClicked(email: string) {
+      this.dialogTitle = '设定申请结果';
+      this.dialogText = '';
+      this.dialogStatus = 0;
+      this.dialogApplicationResult = true;
+    },
+    chipApprovedClicked(email: string) {
+      this.dialogTitle = '修改申请结果';
+      this.dialogText = '此候选人的申请结果已经被设为“通过”，请慎重修改。';
+      this.dialogStatus = 1;
+      this.dialogApplicationResult = true;
+    },
+    chipRejectedClicked(email: string) {
+      this.dialogTitle = '修改申请结果';
+      this.dialogText = '此候选人的申请结果已经被设为“拒绝”，请慎重修改。';
+      this.dialogStatus = 2;
+      this.dialogApplicationResult = true;
+    },
   },
   data() {
     return {
+      dialogApplicationResult: false,
+      dialogTitle: '',
+      dialogText: '',
+      dialogStatus: 0,
+
+      menu: false,
+
       interviewees: [
         {
           email: 'abc@abc.com',
@@ -108,13 +199,6 @@ export default Vue.extend({
         },
       ],
 
-      items: [
-        { icon: true, title: 'Jason Oner', avatar: 'https://cdn.vuetifyjs.com/images/lists/1.jpg' },
-        { title: 'Travis Howard', avatar: 'https://cdn.vuetifyjs.com/images/lists/2.jpg' },
-        { title: 'Ali Connors', avatar: 'https://cdn.vuetifyjs.com/images/lists/3.jpg' },
-        { title: 'Cindy Baker', avatar: 'https://cdn.vuetifyjs.com/images/lists/4.jpg' },
-      ],
-
       headers: [
         {
           text: '面试官',
@@ -122,10 +206,9 @@ export default Vue.extend({
           sortable: false,
           value: 'name',
         },
-        { text: '时间', value: 'calories', sortable: false },
+        { text: '时间', value: 'calories' },
+        { text: '时长', value: 'calories', sortable: false },
         { text: '评分', value: 'fat' },
-        { text: 'Carbs', value: 'carbs' },
-        { text: 'Protein', value: 'protein' },
         { text: '评价', value: 'iron' },
       ],
       desserts: [
