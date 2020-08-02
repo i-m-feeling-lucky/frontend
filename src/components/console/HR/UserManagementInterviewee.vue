@@ -10,7 +10,7 @@
           <v-list-item
             v-for="item in interviewees"
             :key="item.email"
-            @click="intervieweeClicked"
+            @click="intervieweeClicked(item.email)"
             class="pa-0"
           >
             <v-list-item-avatar>
@@ -79,7 +79,7 @@
             <v-btn
               color="orange darken-1"
               text
-              @click="dialogApplicationResult = false"
+              @click="setResult(0)"
               v-show="dialogStatus!==0"
             >
               待定
@@ -88,7 +88,7 @@
             <v-btn
               color="green darken-1"
               text
-              @click="dialogApplicationResult = false"
+              @click="setResult(1)"
               v-show="dialogStatus!==1"
             >
               通过
@@ -97,7 +97,7 @@
             <v-btn
               color="red darken-1"
               text
-              @click="dialogApplicationResult = false"
+              @click="setResult(2)"
               v-show="dialogStatus!==2"
             >
               拒绝
@@ -135,15 +135,24 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import { mapGetters, mapMutations } from 'vuex';
+import axios from 'axios';
+
+const API_URL = process.env.VUE_APP_API_URL;
 
 export default Vue.extend({
   name: 'UserManagementInterviewee',
   metaInfo: {
     title: '候选人管理',
   },
+  computed: {
+    ...mapGetters(['getUser']),
+  },
   methods: {
-    intervieweeClicked() {
-      console.log('interviewee clicked!');
+    ...mapMutations(['setError']),
+    intervieweeClicked(email: string) {
+      // TODO: 点击某个候选人后，展示与他相关的所有面试的信息
+      console.log(`interviewee ${email} clicked!`);
     },
     getColor(rate: number) {
       return ['orange', 'green', 'red'][rate];
@@ -152,19 +161,50 @@ export default Vue.extend({
       this.dialogTitle = '设定申请结果';
       this.dialogText = '';
       this.dialogStatus = 0;
+      this.targetInterviewee = email;
       this.dialogApplicationResult = true;
     },
     chipApprovedClicked(email: string) {
       this.dialogTitle = '修改申请结果';
       this.dialogText = '此候选人的申请结果已经被设为“通过”，请慎重修改。';
       this.dialogStatus = 1;
+      this.targetInterviewee = email;
       this.dialogApplicationResult = true;
     },
     chipRejectedClicked(email: string) {
       this.dialogTitle = '修改申请结果';
       this.dialogText = '此候选人的申请结果已经被设为“拒绝”，请慎重修改。';
       this.dialogStatus = 2;
+      this.targetInterviewee = email;
       this.dialogApplicationResult = true;
+    },
+    setResult(result: number) {
+      axios.put(`${API_URL}/user/application_result`,
+        {
+          interviewee: this.targetInterviewee,
+          // eslint-disable-next-line
+          application_result: result,
+        },
+        {
+          headers: { 'X-Token': this.getUser.token },
+        })
+        .then((response) => {
+          this.interviewees[this.interviewees.findIndex(
+            (interviewee) => interviewee.email === this.targetInterviewee,
+            // eslint-disable-next-line
+          )].application_result = result;
+          this.dialogApplicationResult = false;
+        })
+        .catch((error) => {
+          if (error.response) {
+            this.setError(`Error: ${error.response.status.toString()} ${error.response.statusText}`);
+          } else if (error.request) {
+            this.setError('Error: 服务器无响应');
+          } else {
+            this.setError('Error: 生成请求时发生异常');
+          }
+          this.dialogApplicationResult = false;
+        });
     },
   },
   data() {
@@ -173,6 +213,7 @@ export default Vue.extend({
       dialogTitle: '',
       dialogText: '',
       dialogStatus: 0,
+      targetInterviewee: '',
 
       menu: false,
 
