@@ -18,7 +18,9 @@
                 class="align-end"
                 gradient="to top right, rgba(0,0,0,.7), rgba(0,0,0,0)"
               >
-                <v-card-title class="text-h5 white--text">LUCKY 在线面试平台</v-card-title>
+                <v-card-title class="text-h5 white--text">
+                  LUCKY<sup class="text-subtitle-1">&copy;</sup><span class="ml-1">在线面试平台</span>
+                </v-card-title>
               </v-img>
               <v-card-text>
                 <v-form>

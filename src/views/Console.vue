@@ -12,7 +12,7 @@
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title style="width: 300px" class="ml-0 pl-3">
-        <span>{{ siteName }}</span>
+        LUCKY<sup class="text-subtitle-2">&copy;</sup><span class="ml-1">在线面试平台</span>
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-items>
@@ -42,9 +42,6 @@ export default Vue.extend({
   },
   computed: {
     ...mapGetters(['logged', 'getUserRoleString', 'getError', 'getFullScreen']),
-    siteName() {
-      return process.env.VUE_APP_SITE_NAME;
-    },
   },
   data() {
     return {
