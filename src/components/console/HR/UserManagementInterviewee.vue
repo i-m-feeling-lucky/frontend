@@ -3,9 +3,9 @@
     <v-col class="mx-auto" cols="12" sm="4" md="3">
       <v-card>
         <v-card-title class="pb-0">
-          候选人申请结果
+          候选人
         </v-card-title>
-        <v-list two-line class="px-sm-4" v-if="interviewees.length">
+        <v-list two-line class="px-sm-4">
           <v-divider></v-divider>
           <v-list-item
             v-for="item in interviewees"
@@ -61,7 +61,7 @@
             -->
           </v-list-item>
         </v-list>
-        <v-card-text class="text-center text--secondary" v-else>
+        <v-card-text class="text-center text--secondary" v-if="!this.interviewees.length">
           无数据~
         </v-card-text>
       </v-card>
@@ -106,28 +106,19 @@
         </v-card>
       </v-dialog>
     </v-col>
-    <v-col class="mx-auto" cols="12" sm="7" md="8">
+    <v-col class="mx-auto mt-2" cols="12" sm="7" md="8">
       <v-card>
+        <v-card-title>{{tableInterviewee}}</v-card-title>
         <v-data-table
           :headers="headers"
-          :items="desserts"
-          :items-per-page="50"
+          :items="tableContent"
+          :items-per-page="5"
           class="elevation-1"
-        ></v-data-table>
-      </v-card>
-    </v-col>
-    <v-col class="mx-auto" cols="12">
-      <v-card>
-        <v-card-text class="text--primary">
-          HR 的候选人管理页面<br />
-          <br />
-          需要显示所有归此HR管的候选人的列表，其中需要展示（默认按候选人的邮箱字符串来排序）：<br />
-          <br />
-          邮箱<br />
-          此候选人的面试列表 其中每一个面试需要展示：时间、时长、面试官id、评分、评语<br />
-          此候选人的申请结果（待定、通过、拒绝。HR可修改!）<br />
-          <br />
-        </v-card-text>
+        >
+          <template v-slot:item.rate="{ item }">
+            <v-chip :color="getColor(item.rate)" dark>{{ item.rate }}</v-chip>
+          </template>
+        </v-data-table>
       </v-card>
     </v-col>
  </v-row>
@@ -137,6 +128,7 @@
 import Vue from 'vue';
 import { mapGetters, mapMutations } from 'vuex';
 import axios from 'axios';
+import moment from 'moment';
 
 const API_URL = process.env.VUE_APP_API_URL;
 
@@ -145,52 +137,48 @@ export default Vue.extend({
   metaInfo: {
     title: '候选人管理',
   },
-  computed: {
-    ...mapGetters(['getUser']),
-  },
   methods: {
     ...mapMutations(['setError']),
     intervieweeClicked(email: string) {
-      // TODO: 点击某个候选人后，展示与他相关的所有面试的信息
-      console.log(`interviewee ${email} clicked!`);
-    },
-    getColor(rate: number) {
-      return ['orange', 'green', 'red'][rate];
+      this.tableInterviewee = email;
+      this.tableContent = this.intervieweeInterviews.find(
+        (item: any) => item.email === email,
+      ).interviews;
     },
     chipPendingClicked(email: string) {
       this.dialogTitle = '设定申请结果';
       this.dialogText = '';
       this.dialogStatus = 0;
-      this.targetInterviewee = email;
+      this.dialogInterviewee = email;
       this.dialogApplicationResult = true;
     },
     chipApprovedClicked(email: string) {
       this.dialogTitle = '修改申请结果';
       this.dialogText = '此候选人的申请结果已经被设为“通过”，请慎重修改。';
       this.dialogStatus = 1;
-      this.targetInterviewee = email;
+      this.dialogInterviewee = email;
       this.dialogApplicationResult = true;
     },
     chipRejectedClicked(email: string) {
       this.dialogTitle = '修改申请结果';
       this.dialogText = '此候选人的申请结果已经被设为“拒绝”，请慎重修改。';
       this.dialogStatus = 2;
-      this.targetInterviewee = email;
+      this.dialogInterviewee = email;
       this.dialogApplicationResult = true;
     },
     setResult(result: number) {
       axios.put(`${API_URL}/user/application_result`,
         {
-          interviewee: this.targetInterviewee,
+          interviewee: this.dialogInterviewee,
           // eslint-disable-next-line
           application_result: result,
         },
         {
           headers: { 'X-Token': this.getUser.token },
         })
-        .then((response) => {
+        .then(() => {
           this.interviewees[this.interviewees.findIndex(
-            (interviewee) => interviewee.email === this.targetInterviewee,
+            (interviewee: any) => interviewee.email === this.dialogInterviewee,
             // eslint-disable-next-line
           )].application_result = result;
           this.dialogApplicationResult = false;
@@ -206,6 +194,14 @@ export default Vue.extend({
           this.dialogApplicationResult = false;
         });
     },
+    getColor(rate: string) {
+      if (rate === 'S') return 'green';
+      if (rate === 'A') return 'green lighten-1';
+      if (rate === 'B') return 'orange lighten-1';
+      if (rate === 'C') return 'pink lighten-1';
+      if (rate === 'D') return 'red';
+      return 'grey';
+    },
   },
   data() {
     return {
@@ -213,128 +209,223 @@ export default Vue.extend({
       dialogTitle: '',
       dialogText: '',
       dialogStatus: 0,
-      targetInterviewee: '',
+      dialogInterviewee: '',
 
-      menu: false,
+      interviewees: [] as any,
+      interviews: [] as any,
 
-      interviewees: [
-        {
-          email: 'abc@abc.com',
-          // eslint-disable-next-line
-          application_result: 0,
-        },
-        {
-          email: 'jackweller@gmail.com',
-          // eslint-disable-next-line
-          application_result: 0,
-        },
-        {
-          email: 'yusanshi@163.com',
-          // eslint-disable-next-line
-          application_result: 1,
-        },
-        {
-          email: 'anothertest@gmail.com',
-          // eslint-disable-next-line
-          application_result: 2,
-        },
-      ],
+      tableInterviewee: '面试官评价（请选择要查看的候选人）',
 
       headers: [
         {
-          text: '面试官',
-          align: 'start',
-          sortable: false,
-          value: 'name',
+          text: '面试官', align: 'start', sortable: false, value: 'interviewer',
         },
-        { text: '时间', value: 'calories' },
-        { text: '时长', value: 'calories', sortable: false },
-        { text: '评分', value: 'fat' },
-        { text: '评价', value: 'iron' },
+        { text: '时间', value: 'start_time' },
+        { text: '时长（分钟）', sortable: false, value: 'length' },
+        { text: '评分', sortable: false, value: 'rate' },
+        { text: '评语', sortable: false, value: 'comment' },
       ],
-      desserts: [
-        {
-          name: 'Frozen Yogurt',
-          calories: '7 月 1日',
-          fat: 6.0,
-          carbs: 24,
-          protein: 4.0,
-          iron: '具备良好的人品，乐于与人沟通，生活在群体之中，能够与人进行客观直接的沟通，具有较强的团队管理能力和与人合作的精神，能够积极互动努力达成团队的目标',
-        },
-        {
-          name: 'Ice cream sandwich',
-          calories: 237,
-          fat: 9.0,
-          carbs: 37,
-          protein: 4.3,
-          iron: '善于学习，勤奋务实，刻苦钻研，具备广泛的兴趣和很丰富的知识，适应能力强，能够在很段时间内融入一个新的领域，适应他并且把他做好',
-        },
-        {
-          name: 'Eclair',
-          calories: 262,
-          fat: 16.0,
-          carbs: 23,
-          protein: 6.0,
-          iron: '7%',
-        },
-        {
-          name: 'Cupcake',
-          calories: 305,
-          fat: 3.7,
-          carbs: 67,
-          protein: 4.3,
-          iron: '8%',
-        },
-        {
-          name: 'Gingerbread',
-          calories: 356,
-          fat: 16.0,
-          carbs: 49,
-          protein: 3.9,
-          iron: '16%',
-        },
-        {
-          name: 'Jelly bean',
-          calories: 375,
-          fat: 0.0,
-          carbs: 94,
-          protein: 0.0,
-          iron: '0%',
-        },
-        {
-          name: 'Lollipop',
-          calories: 392,
-          fat: 0.2,
-          carbs: 98,
-          protein: 0,
-          iron: '2%',
-        },
-        {
-          name: 'Honeycomb',
-          calories: 408,
-          fat: 3.2,
-          carbs: 87,
-          protein: 6.5,
-          iron: '45%',
-        },
-        {
-          name: 'Donut',
-          calories: 452,
-          fat: 25.0,
-          carbs: 51,
-          protein: 4.9,
-          iron: '22%',
-        },
-        {
-          name: 'KitKat',
-          calories: 518,
-          fat: 26.0,
-          carbs: 65,
-          protein: 7,
-          iron: '6%',
-        },
-      ],
+      tableContent: [],
     };
+  },
+  computed: {
+    ...mapGetters(['getUser']),
+    intervieweeInterviews(): any[] {
+      return this.interviewees.map(
+        (interviewee: any) => ({
+          email: interviewee.email,
+          // eslint-disable-next-line
+          application_result: interviewee.application_result,
+          interviews: this.interviews.filter(
+            (interview: any) => interview.interviewee === interviewee.email,
+          ),
+        }),
+      );
+    },
+  },
+  mounted() {
+    // HR 拿到自己负责的所有候选人的邮箱和每个候选人现在的申请结果
+    axios.get(`${API_URL}/user/${this.getUser.id}/assignment`,
+      {
+        headers: { 'X-Token': this.getUser.token },
+      })
+      .then((response) => {
+        this.interviewees = response.data.interviewees;
+      }).catch((error) => {
+        if (error.response) {
+          this.setError(`Error: ${error.response.status.toString()} ${error.response.statusText}`);
+        } else if (error.request) {
+          this.setError('Error: 服务器无响应');
+        } else {
+          this.setError('Error: 生成请求时发生异常');
+        }
+        // TODO: 暂时用的数据
+        this.interviewees = [
+          {
+            email: 'jackweller@gmail.com',
+            // eslint-disable-next-line
+            application_result: 0,
+          },
+          {
+            email: 'yusanshi@163.com',
+            // eslint-disable-next-line
+            application_result: 1,
+          },
+          {
+            email: 'anothertest@gmail.com',
+            // eslint-disable-next-line
+            application_result: 2,
+          },
+          {
+            email: 'fortest@126.com',
+            // eslint-disable-next-line
+            application_result: 0,
+          },
+        ];
+      });
+    // 获取所有面试，过滤后只剩下与此 HR 相关，且已经结束了的面试
+    axios.get(`${API_URL}/interview`,
+      {
+        headers: { 'X-Token': this.getUser.token },
+      })
+      .then((response) => {
+        this.interviews = response.data.filter(
+          (interview: any) => interview.hr === this.getUser.id && interview.status === 'ended',
+        ).map((interview: any) => ({
+          interviewee: interview.interviewee,
+          interviewer: interview.interviewer,
+          token: interview.token,
+          // eslint-disable-next-line
+          start_time: moment.unix(interview.start_time).format('M月D日 kk:mm'),
+          length: interview.length,
+          rate: ['S', 'A', 'B', 'C', 'D'][interview.rate],
+          comment: interview.comment,
+        }));
+        // TODO: 因为后端还没实现，所以在这里临时使用一些自己编的数据
+        this.interviews = [
+          {
+            id: 1,
+            hr: 7,
+            interviewer: 99,
+            interviewee: 'abc@abc.com',
+            token: 'testtoken1',
+            // eslint-disable-next-line
+            start_time: moment('2020-07-25T07:00:00').unix(), // 时间戳，格林威治时间1970年1月1日0时0分0秒至今的秒数
+            length: 30, // 面试时长（分钟）
+            status: 'upcoming',
+            rate: 200,
+            comment: '',
+          },
+          {
+            id: 2,
+            hr: 6,
+            interviewer: 8,
+            interviewee: 'jackweller@gmail.com',
+            token: 'testtoken2',
+            // eslint-disable-next-line
+            start_time: moment('2020-07-27T08:00:00').unix(),
+            length: 30,
+            status: 'ended',
+            rate: 0,
+            comment: '建议录取。',
+          },
+          {
+            id: 22,
+            hr: 6,
+            interviewer: 9,
+            interviewee: 'jackweller@gmail.com',
+            token: 'testtoken22',
+            // eslint-disable-next-line
+            start_time: moment('2020-07-30T08:00:00').unix(),
+            length: 30,
+            status: 'ended',
+            rate: 1,
+            comment: '数理基础扎实。',
+          },
+          {
+            id: 3,
+            hr: 6,
+            interviewer: 8,
+            interviewee: 'yusanshi@163.com',
+            token: 'testtoken3',
+            // eslint-disable-next-line
+            start_time: moment('2020-07-27T09:30:00').unix(),
+            length: 60,
+            status: 'ended',
+            rate: 0,
+            comment: '非常好！数理基础扎实！',
+          },
+          {
+            id: 5,
+            hr: 6,
+            interviewer: 8,
+            interviewee: 'fortest@126.com',
+            token: 'testtoken5',
+            // eslint-disable-next-line
+            start_time: moment('2020-07-28T16:00:00').unix(),
+            length: 50,
+            status: 'ended',
+            rate: 3,
+            comment: '比较一般。',
+          },
+          {
+            id: 4,
+            hr: 6,
+            interviewer: 8,
+            interviewee: 'anothertest@gmail.com',
+            token: 'testtoken4',
+            // eslint-disable-next-line
+            start_time: moment('2020-07-28T13:00:00').unix(),
+            length: 40,
+            status: 'ended',
+            rate: 2,
+            comment: '非常差。',
+          },
+          {
+            id: 6,
+            hr: 6,
+            interviewer: 8,
+            interviewee: 'anothertest@gmail.com',
+            token: 'testtoken6',
+            // eslint-disable-next-line
+            start_time: moment('2020-07-25T13:00:00').unix(),
+            length: 40,
+            status: 'active',
+          },
+          {
+            id: 7,
+            hr: 6,
+            interviewer: 8,
+            interviewee: 'fortest@126.com',
+            token: 'testtoken7',
+            // eslint-disable-next-line
+            start_time: moment('2020-05-01T16:00:00').unix(),
+            length: 50,
+            status: 'ended',
+            rate: 4,
+            comment: '技术不扎实。',
+          },
+        ].filter(
+          (interview: any) => interview.hr === this.getUser.id && interview.status === 'ended',
+        ).map((interview: any) => ({
+          interviewee: interview.interviewee,
+          interviewer: interview.interviewer,
+          token: interview.token,
+          // eslint-disable-next-line
+          start_time: moment.unix(interview.start_time).format('M月D日 kk:mm'),
+          length: interview.length,
+          rate: ['S', 'A', 'B', 'C', 'D'][interview.rate],
+          comment: interview.comment,
+        }));
+      }).catch((error) => {
+        if (error.response) {
+          this.setError(`Error: ${error.response.status.toString()} ${error.response.statusText}`);
+        } else if (error.request) {
+          this.setError('Error: 服务器无响应');
+        } else {
+          this.setError('Error: 生成请求时发生异常');
+        }
+      });
   },
 });
 </script>
