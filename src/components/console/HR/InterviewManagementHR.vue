@@ -186,11 +186,11 @@
 
       </v-expansion-panels>
     </v-col>
-    <v-col class="mx-auto mt-3" cols="12" sm="8" md="5">
+    <v-col class="mx-auto mt-3" cols="12" sm="8" md="4">
       <v-card elevation="4">
         <v-img
           src="@/assets/banner-shake-hand.jpg"
-          height="150"
+          height="125"
           class="align-end"
         >
           <v-icon dark size="60" class="ml-6">mdi-account-multiple-plus</v-icon>
@@ -203,8 +203,9 @@
               <v-row no-gutters>
                 <v-col cols="10" class="mx-auto">
                  <v-select
-                    v-model="selectedInterviewerEmail"
-                    :items="interviewerEmails"
+                    v-model="selectedInterviewerID"
+                    :items="interviewerIDs"
+                    :rules="interviewerRules"
                     label="面试官"
                     prepend-icon="mdi-account-tie"
                   ></v-select>
@@ -213,17 +214,108 @@
                  <v-select
                     v-model="selectedIntervieweeEmail"
                     :items="intervieweeEmails"
+                    :rules="intervieweeRules"
                     label="面试者"
                     prepend-icon="mdi-account-tie-outline"
                   ></v-select>
                 </v-col>
-                <v-col cols="10" class="mx-auto">
-                 <v-select
-                    v-model="selectedLength"
-                    :items="lengths"
-                    label="时长（分钟）"
-                    prepend-icon="mdi-clock-time-four-outline"
-                  ></v-select>
+              </v-row>
+              <v-row>
+                <v-col cols="10" class="mx-auto py-0">
+                  <v-menu
+                    ref="menu1"
+                    v-model="menu1"
+                    :close-on-content-click="false"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="290px"
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        v-model="date"
+                        label="日期"
+                        prepend-icon="mdi-calendar"
+                        readonly
+                        required
+                        v-bind="attrs"
+                        v-on="on"
+                      ></v-text-field>
+                    </template>
+                    <v-date-picker
+                      locale="zh-cn"
+                      v-model="date"
+                      min="2020-01-01"
+                      @change="$refs.menu1.save(date)"
+                    ></v-date-picker>
+                  </v-menu>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="10" class="mx-auto py-0">
+                  <v-menu
+                    ref="menu2"
+                    v-model="menu2"
+                    :close-on-content-click="false"
+                    :return-value.sync="newStartTime"
+                    transition="scale-transition"
+                    offset-y
+                    max-width="290px"
+                    min-width="290px"
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        v-model="newStartTime"
+                        label="开始时间"
+                        prepend-icon="mdi-clock-time-two-outline"
+                        readonly
+                        required
+                        v-bind="attrs"
+                        v-on="on"
+                        :rules="newStartTimeRules"
+                      ></v-text-field>
+                    </template>
+                    <v-time-picker
+                      v-if="menu2"
+                      v-model="newStartTime"
+                      full-width
+                      @click:minute="$refs.menu2.save(newStartTime)"
+                      format="24hr"
+                    ></v-time-picker>
+                  </v-menu>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="10" class="mx-auto py-0">
+                  <v-menu
+                    ref="menu3"
+                    v-model="menu3"
+                    :close-on-content-click="false"
+                    :return-value.sync="newEndTime"
+                    transition="scale-transition"
+                    offset-y
+                    max-width="290px"
+                    min-width="290px"
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        v-model="newEndTime"
+                        label="结束时间"
+                        prepend-icon="mdi-clock-time-four-outline"
+                        readonly
+                        required
+                        v-bind="attrs"
+                        v-on="on"
+                        :rules="newEndTimeRules"
+                      ></v-text-field>
+                    </template>
+                    <v-time-picker
+                      v-if="menu3"
+                      v-model="newEndTime"
+                      full-width
+                      @click:minute="$refs.menu3.save(newEndTime)"
+                      format="24hr"
+                    ></v-time-picker>
+                  </v-menu>
                 </v-col>
               </v-row>
             </v-container>
@@ -259,21 +351,41 @@ export default Vue.extend({
       interviews: [] as any,
 
       loadingAdd: false,
-
       valid: false,
 
-      interviewerEmails: [] as string[],
-      selectedInterviewerEmail: '',
+      interviewerIDs: [] as string[],
+      selectedInterviewerID: '',
+      interviewerRules: [
+        (interviewer: string) => !!interviewer || '需要选择面试官',
+      ],
 
       intervieweeEmails: [] as string[],
       selectedIntervieweeEmail: '',
+      intervieweeRules: [
+        (interviewee: string) => !!interviewee || '需要选择候选人',
+      ],
 
-      lengths: ['30', '40', '60', '90'],
-      selectedLength: '30',
+      date: moment().format().slice(0, 10),
+      newStartTime: '',
+      newEndTime: '',
+      menu1: false,
+      menu2: false,
+      menu3: false,
+      newStartTimeRules: [
+        (startTime: string) => !!startTime || '需要选择开始时间',
+      ],
     };
   },
   computed: {
     ...mapGetters(['getUser']),
+    newEndTimeRules() {
+      const newEndTimeRules: any = [(endTime: string) => !!endTime || '需要选择结束时间'];
+      if (this.newStartTime !== '') {
+        const rule = (endTime: string) => endTime > this.newStartTime || '结束时间必须晚于开始时间';
+        newEndTimeRules.push(rule);
+      }
+      return newEndTimeRules;
+    },
     upcomingInterviews(): any[] {
       return this.interviews.filter(
         (interview: any) => interview.status === 'upcoming',
@@ -291,12 +403,41 @@ export default Vue.extend({
     },
   },
   methods: {
-    ...mapMutations(['setError']),
+    ...mapMutations(['setError', 'setSuccess']),
     unixToString(num: number) {
       return moment.unix(num).format('M月D日 kk:mm');
     },
     onAddNewInterview() {
-      console.log('TODO onAddNewInterview'); // TODO
+      if ((this.$refs.form as any).validate()) {
+        this.loadingAdd = true;
+        const momentStart = moment(`${this.date}T${this.newStartTime}:00`);
+        const momentEnd = moment(`${this.date}T${this.newEndTime}:00`);
+        axios.post(`${API_URL}/interview`,
+          {
+            hr: this.getUser.id,
+            interviewer: Number(this.selectedInterviewerID),
+            interviewee: this.selectedIntervieweeEmail,
+            // eslint-disable-next-line
+            start_time: momentStart.unix(),
+            length: momentEnd.diff(momentStart, 'minutes'),
+          },
+          {
+            headers: { 'X-Token': this.getUser.token },
+          })
+          .then((response) => {
+            this.loadingAdd = false;
+            this.setSuccess('添加面试成功');
+          }).catch((error) => {
+            if (error.response) {
+              this.setError(`Error: ${error.response.status.toString()} ${error.response.statusText}`);
+            } else if (error.request) {
+              this.setError('Error: 服务器无响应');
+            } else {
+              this.setError('Error: 生成请求时发生异常');
+            }
+            this.loadingAdd = false;
+          });
+      }
     },
   },
   mounted() {
@@ -398,6 +539,52 @@ export default Vue.extend({
           this.setError('Error: 生成请求时发生异常');
         }
         this.panel = [0, 1];
+      });
+    axios.get(`${API_URL}/user/${this.getUser.id}/assignment`,
+      {
+        headers: { 'X-Token': this.getUser.token },
+      })
+      .then((response) => {
+        this.interviewerIDs = response.data.interviewers.map(
+          (interviewer: number) => interviewer.toString(),
+        );
+        this.intervieweeEmails = response.data.interviewees.map(
+          (interviewee: any) => interviewee.email,
+        );
+      }).catch((error) => {
+        if (error.response) {
+          this.setError(`Error: ${error.response.status.toString()} ${error.response.statusText}`);
+        } else if (error.request) {
+          this.setError('Error: 服务器无响应');
+        } else {
+          this.setError('Error: 生成请求时发生异常');
+        }
+        // TODO: 因为后端还没实现，所以在这里临时使用一些自己编的数据
+        const data = {
+          interviewers: [
+            8,
+          ],
+          interviewees: [
+            {
+              email: 'jackweller@gmail.com',
+            },
+            {
+              email: 'yusanshi@163.com',
+            },
+            {
+              email: 'anothertest@gmail.com',
+            },
+            {
+              email: 'fortest@126.com',
+            },
+          ],
+        };
+        this.interviewerIDs = data.interviewers.map(
+          (interviewer: number) => interviewer.toString(),
+        );
+        this.intervieweeEmails = data.interviewees.map(
+          (interviewee: any) => interviewee.email,
+        );
       });
   },
 });
