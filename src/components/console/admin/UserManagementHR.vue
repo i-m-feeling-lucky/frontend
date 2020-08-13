@@ -251,11 +251,13 @@ export default Vue.extend({
       if ((this.$refs.form3 as any).validate()) {
         this.loadingAdd = true;
         axios.post(`${API_URL}/user`,
-          {
-            email: this.email,
-            password: this.password,
-            role: 1, // HR
-          },
+          [
+            {
+              email: this.email,
+              password: this.password,
+              role: 1, // HR
+            },
+          ],
           {
             headers: { 'X-Token': this.getUser.token },
           })

@@ -7,7 +7,7 @@
           height="125"
           class="align-end"
         >
-          <v-icon dark size="60" class="ml-6">mdi-account-multiple-plus</v-icon>
+          <v-icon dark size="60" class="ml-6">mdi-account-plus</v-icon>
           <v-card-title class="pt-0 pb-4 text-h5 white--text">添加候选人</v-card-title>
         </v-img>
         <v-card-text class="pa-0">
@@ -61,7 +61,11 @@
               <v-row>
                 <v-col cols="10" class="mx-auto">
                   <v-file-input accept=".csv,.xls,.xlsx"
+                    v-model="file"
                     label="选择文件(.csv, .xls, .xlsx)"
+                    v-bind="attrs"
+                    v-on="on"
+                    :rules="fileRules"
                   ></v-file-input>
                 </v-col>
               </v-row>
@@ -107,6 +111,9 @@ export default Vue.extend({
         (name: string) => !!name || '必须填写姓名',
       ],
 
+      fileRules: [
+        (file: string) => !!file || '请选择文件',
+      ],
     };
   },
   computed: {
@@ -118,10 +125,13 @@ export default Vue.extend({
       if ((this.$refs.form1 as any).validate()) {
         this.loadingAdd = true;
         axios.post(`${API_URL}/user`,
-          {
-            email: this.email,
-            name: this.name,
-          },
+          [
+            {
+              email: this.email,
+              name: this.name,
+              role: 3,
+            },
+          ],
           {
             headers: { 'X-Token': this.getUser.token },
           })
@@ -144,10 +154,13 @@ export default Vue.extend({
       if ((this.$refs.form2 as any).validate()) {
         this.loadingAdd = true;
         axios.post(`${API_URL}/user`,
-          {
-            email: '',
-            name: '',
-          },
+          [
+            {
+              email: '',
+              name: '',
+              role: '3',
+            },
+          ],
           {
             headers: { 'X-Token': this.getUser.token },
           })
