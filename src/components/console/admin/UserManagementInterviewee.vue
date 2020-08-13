@@ -99,7 +99,7 @@ export default Vue.extend({
     return {
       loadingAdd: false,
       valid: false,
-
+      file: null,
       email: '',
       emailRules: [
         (email: string) => !!email || '必须填写电子邮箱地址',
@@ -151,6 +151,15 @@ export default Vue.extend({
       }
     },
     onUploadNewInterviewee() {
+      // https://stackoverflow.com/questions/750032/reading-file-contents-on-the-client-side-in-javascript-in-various-browsers
+      const reader = new FileReader();
+      reader.readAsText(this.file, 'UTF-8');
+      reader.onload = function (evt) {
+        alert(evt.target.result);
+      };
+      reader.onerror = function (evt) {
+        alert('error reading file');
+      };
       if ((this.$refs.form2 as any).validate()) {
         this.loadingAdd = true;
         axios.post(`${API_URL}/user`,
