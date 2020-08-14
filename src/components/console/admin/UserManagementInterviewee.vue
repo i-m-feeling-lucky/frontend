@@ -81,6 +81,8 @@
 import Vue from 'vue';
 import { mapGetters, mapMutations } from 'vuex';
 import axios from 'axios';
+import Papa from 'papaparse';
+import XLSX from 'xlsx';
 
 const API_URL = process.env.VUE_APP_API_URL;
 
@@ -146,24 +148,59 @@ export default Vue.extend({
       }
     },
     onUploadNewInterviewee() {
+      // eslint-disable-next-line
+      let postData = [{}];
       const reader = new FileReader();
-      reader.readAsText(this.file, 'UTF-8');
-      reader.onload = function (evt: any) {
-        alert(evt.target.result);
-      };
-      reader.onerror = function (evt) {
-        alert('error reading rile');
-      };
+      if (/\.(csv)$/.test((this.file as any).name)) {
+        reader.readAsText(this.file, 'UTF-8');
+        reader.onload = function (evt: any) {
+          const interviewees = Papa.parse(evt.target.result).data;
+          for (let i = 0; i < interviewees.length; i += 1) {
+            if (/.+@.+\..+/.test(String((interviewees as any)[i][0]))) {
+              postData.push({
+                email: String((interviewees as any)[i][0]),
+                name: String((interviewees as any)[i][1]),
+                role: 3,
+              });
+            } else if (/.+@.+\..+/.test(String((interviewees as any)[i][1]))) {
+              postData.push({
+                email: String((interviewees as any)[i][1]),
+                name: String((interviewees as any)[i][0]),
+                role: 3,
+              });
+            } else {
+              alert('已忽略无效的电子邮箱地址');
+            }
+          }
+          postData.shift();
+          console.log(postData);
+        };
+        reader.onerror = function (evt) {
+          alert('error reading rile');
+        };
+      } else if (/\.(xls|xlsx)$/.test((this.file as any).name)) {
+        reader.readAsBinaryString(this.file);
+        reader.onload = function (evt: any) {
+          const data = XLSX.read(evt.target.result, { type: 'binary' });
+          const sheetName = data.SheetNames[0];
+          const interviewees = XLSX.utils.sheet_to_json(data.Sheets[sheetName]);
+          for (let i = 0; i < interviewees.length; i += 1) {
+            postData.push({
+              email: (interviewees as any)[i].email,
+              name: (interviewees as any)[i].name,
+              role: 3,
+            });
+          }
+          postData.shift();
+          console.log(postData);
+        };
+        reader.onerror = function (evt) {
+          alert('error reading rile');
+        };
+      }
       if ((this.$refs.form2 as any).validate()) {
         this.loadingAdd = true;
-        axios.post(`${API_URL}/user`,
-          [
-            {
-              email: '',
-              name: '',
-              role: '3',
-            },
-          ],
+        axios.post(`${API_URL}/user`, postData,
           {
             headers: { 'X-Token': this.getUser.token },
           })
