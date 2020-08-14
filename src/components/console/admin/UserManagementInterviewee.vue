@@ -18,8 +18,6 @@
                   <v-text-field
                     v-model="email"
                     label="电子邮箱"
-                    v-bind="attrs"
-                    v-on="on"
                     :rules="emailRules"
                   ></v-text-field>
                 </v-col>
@@ -27,8 +25,6 @@
                   <v-text-field
                     v-model="name"
                     label="姓名"
-                    v-bind="attrs"
-                    v-on="on"
                     :rules="nameRules"
                   ></v-text-field>
                 </v-col>
@@ -63,8 +59,6 @@
                   <v-file-input accept=".csv,.xls,.xlsx"
                     v-model="file"
                     label="选择文件(.csv, .xls, .xlsx)"
-                    v-bind="attrs"
-                    v-on="on"
                     :rules="fileRules"
                   ></v-file-input>
                 </v-col>
@@ -111,8 +105,9 @@ export default Vue.extend({
         (name: string) => !!name || '必须填写姓名',
       ],
 
+      file: null as unknown as Blob,
       fileRules: [
-        (file: string) => !!file || '请选择文件',
+        (file: File) => !!file || '请选择文件',
       ],
     };
   },
@@ -151,6 +146,14 @@ export default Vue.extend({
       }
     },
     onUploadNewInterviewee() {
+      const reader = new FileReader();
+      reader.readAsText(this.file, 'UTF-8');
+      reader.onload = function (evt: any) {
+        alert(evt.target.result);
+      };
+      reader.onerror = function (evt) {
+        alert('error reading rile');
+      };
       if ((this.$refs.form2 as any).validate()) {
         this.loadingAdd = true;
         axios.post(`${API_URL}/user`,

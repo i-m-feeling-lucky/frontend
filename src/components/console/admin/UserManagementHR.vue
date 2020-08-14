@@ -107,8 +107,6 @@
                 <v-col cols="10" class="mx-auto">
                   <v-text-field
                     v-model="email"
-                    v-bind="attrs"
-                    v-on="on"
                     :rules="emailRules"
                     label="电子邮箱"
                   ></v-text-field>

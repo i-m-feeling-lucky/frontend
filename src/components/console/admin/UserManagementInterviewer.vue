@@ -19,8 +19,6 @@
                   <v-text-field
                     v-model="email"
                     label="电子邮箱"
-                    v-bind="attrs"
-                    v-on="on"
                     :rules=emailRules
                   ></v-text-field>
                 </v-col>
