@@ -99,7 +99,7 @@ export default Vue.extend({
     return {
       loadingAdd: false,
       valid: false,
-      file: null,
+      file: null as unknown as Blob,
       email: '',
       emailRules: [
         (email: string) => !!email || '必须填写电子邮箱地址',
@@ -154,7 +154,7 @@ export default Vue.extend({
       // https://stackoverflow.com/questions/750032/reading-file-contents-on-the-client-side-in-javascript-in-various-browsers
       const reader = new FileReader();
       reader.readAsText(this.file, 'UTF-8');
-      reader.onload = function (evt) {
+      reader.onload = function (evt: any) {
         alert(evt.target.result);
       };
       reader.onerror = function (evt) {
