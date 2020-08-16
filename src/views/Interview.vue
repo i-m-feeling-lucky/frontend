@@ -4,8 +4,47 @@
       <golden-layout :hasHeaders="false" class="hscreen">
         <gl-row>
           <gl-col>
+            <!-- TODO -->
             <gl-component>
-              <codemirror v-model="code.data" :options="cmOptions" />
+              <v-row>
+                <v-col>
+                  <v-select
+                    v-model="code.data.lang"
+                    :items="supportedLangs"
+                    label="Language"
+                    :dense="true"
+                  ></v-select>
+                </v-col>
+                <v-col>
+                  <v-btn>Run</v-btn>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col>
+                  <v-textarea
+                    name="input"
+                    label="Input"
+                    :filled="true"
+                    :dense="true"
+                    rows="2"
+                    v-model="code.data.input"
+                  ></v-textarea>
+                </v-col>
+                <v-col>
+                  <v-textarea
+                    name="output"
+                    label="Output"
+                    :filled="true"
+                    :dense="true"
+                    rows="2"
+                    v-model="code.data.output"
+                    :readonly="true"
+                  ></v-textarea>
+                </v-col>
+              </v-row>
+              </gl-component>
+            <gl-component>
+              <codemirror v-model="code.data.text" :options="cmOptions" />
             </gl-component>
             <gl-component>
               <DrawingBoard v-model="drawing.data" />
@@ -15,16 +54,10 @@
             <gl-row>
               <!-- TODO click to switch between three modes -->
               <gl-component>
-                <div
-                  id="video-container-interviewer"
-                  class="video-container"
-                ></div>
+                <div id="video-container-interviewer" class="video-container"></div>
               </gl-component>
               <gl-component
-                ><div
-                  id="video-container-interviewee"
-                  class="video-container"
-                ></div>
+                ><div id="video-container-interviewee" class="video-container"></div>
               </gl-component>
             </gl-row>
             <gl-component
@@ -67,6 +100,7 @@ import io from 'socket.io-client';
 import vgl from 'vue-golden-layout';
 import roleMap from '@/utils/roleMap';
 import toBase64 from '@/utils/toBase64';
+import { dummyVerify } from '@/utils/dummyInterview';
 import 'codemirror/mode/javascript/javascript'; // TODO
 import 'codemirror/theme/base16-dark.css';
 import { codemirror } from 'vue-codemirror';
@@ -109,43 +143,43 @@ export default Vue.extend({
       codeStopWatch: false,
       drawingStopWatch: false,
 
+      supportedLangs: [
+        {
+          text: 'C',
+          value: 'c',
+        },
+        {
+          text: 'C++',
+          value: 'cpp',
+        },
+        {
+          text: 'Python3',
+          value: 'python',
+        },
+      ],
+
       code: {
         time: Date.now(),
-        data: `// A weird HelloWorld in JS
-const ________________ = [] + [];
-let _ = +[];
-_++;
-const _____ = _ + _;
-const ___ = _____ + _____;
-const __ = ___ + ___;
-const ____ = __ + __;
-const ______ = ____ + ____;
-const _______ = ______ + _;
-const ___________ = ______ + ______ + __;
-const ______________ = ___________ + ____ - _;
-const ____________ = _ + _____;
-const ________ = _______ * ____________ + _;
-const _________ = ________ + _;
-const _____________ = ______________ + ______ - ___ - _;
-const __________ = _____________ - ____________;
-const _______________ = __________ - ____________;
-console.log(
-  ________________ +
-    String.fromCharCode(
-      ___________,
-      _________,
-      _______________,
-      _______________,
-      __________,
-      ______,
-      ______________,
-      __________,
-      _____________,
-      _______________,
-      ________,
-      _______
-    )
-);`,
+        data: {
+          lang: 'c',
+          input: 'J',
+          output: 'Hello world.',
+          text: `// A weird HelloWorld in C
+// https://codegolf.stackexchange.com/a/22596
+#include <stdio.h>
+int main() {
+  long long P = 1,
+            E = 2,
+            T = 5,
+            A = 61,
+            L = 251,
+            N = 3659,
+            R = 271173410,
+            G = 1479296389,
+            x[] = { G * R * E * E * T , P * L * A * N * E * T };
+  puts((char*)x);
+}`,
+        },
       },
 
       drawing: {
@@ -239,12 +273,9 @@ console.log(
           }
         });
       axios
-        .get(
-          `${API_URL}/interview/${this.id}/history/whiteboard?scope=latest`,
-          {
-            headers: { 'X-Token': this.token },
-          },
-        )
+        .get(`${API_URL}/interview/${this.id}/history/whiteboard?scope=latest`, {
+          headers: { 'X-Token': this.token },
+        })
         .then((response) => {
           if (response.data.length !== 0) {
             [this.drawing] = response.data;
@@ -285,7 +316,6 @@ console.log(
         video: true,
         data: true,
       };
-      // TODO mirror video
       this.connection.videosContainer = {
         interviewer: document.getElementById('video-container-interviewer')!,
         interviewee: document.getElementById('video-container-interviewee')!,
@@ -329,12 +359,8 @@ console.log(
         this.connection.onstream = (event: any) => {
           const videoElement = event.mediaElement;
           if (event.type === 'remote') {
-            if (
-              ['interviewer', 'interviewee'].includes(roleMap[event.extra.role])
-            ) {
-              const targetElement = this.connection.videosContainer[
-                roleMap[event.extra.role]
-              ];
+            if (['interviewer', 'interviewee'].includes(roleMap[event.extra.role])) {
+              const targetElement = this.connection.videosContainer[roleMap[event.extra.role]];
               targetElement.innerHTML = '';
               targetElement.appendChild(videoElement);
             }
@@ -441,9 +467,6 @@ console.log(
             this.setError(error.message);
           }
         });
-      // setTimeout(() => {
-      //   message.uploaded = true;
-      // }, 2000);
     },
     onImageSelected({ file, message }: any) {
       if (this.connection === null) {
@@ -501,16 +524,25 @@ console.log(
     this.id = +this.$route.params.id;
     this.token = this.$route.query.token as string;
     if (this.token === undefined) {
+      // The user may be HR, load its access_token as interview token
+      const userString = localStorage.getItem('user');
+      if (userString !== null) {
+        this.token = JSON.parse(userString).token;
+      }
+    }
+    if (this.token === undefined) {
       this.setError('无 token，禁止访问！');
       return;
     }
     // Verify the token, then initialize the interview
-    axios
-      .get(`${API_URL}/interview/${this.id}/verify`, {
-        headers: { 'X-Token': this.token },
-      })
-      .then((response) => {
+    // axios
+    //   .get(`${API_URL}/interview/${this.id}/verify`, {
+    //     headers: { 'X-Token': this.token },
+    //   })
+    dummyVerify(this.id, this.token) // TODO
+      .then((response: any) => {
         this.role = response.data.role;
+        this.password = response.data.password;
         const roleString = roleMap[this.role];
         if (roleString === 'interviewee') {
           this.participants[0].name = '面试官';
@@ -528,16 +560,14 @@ console.log(
           this.myself.name = '面试官';
           this.myself.id = roleMap.indexOf('interviewer');
           this.placeholder = '您只能旁观，不能发送信息';
-          document
-            .querySelectorAll('.quick-chat-container .container-send-message')
-            .forEach((e) => {
-              (e as HTMLElement).style.display = 'none';
-            });
+          document.querySelectorAll('.quick-chat-container .container-send-message').forEach((e) => {
+            (e as HTMLElement).style.display = 'none';
+          });
           document
             .querySelector('.quick-chat-container .message-input')!
             .setAttribute('contenteditable', 'false');
         }
-        this.resume();
+        // this.resume(); #TODO
         this.initializeConnection();
       })
       .catch((error) => {
@@ -553,38 +583,41 @@ console.log(
 
   watch: {
     // TODO this?
-    'code.data': function () {
-      if (this.connection === null) {
-        this.setError('未建立连接，代码无法同步！');
-        return;
-      }
-      if (this.connection.socket === null) {
-        this.setError('连接已断开，代码无法同步！请在新打开的窗口中执行操作！');
-        return;
-      }
-      if (!this.codeStopWatch) {
-        console.log('I changed the code. Send...');
-        this.code.time = Date.now();
-        this.connection.send({ code: this.code });
-        axios
-          .post(
-            `${API_URL}/interview/${this.id}/history/code`,
-            // Use time in server
-            this.code.data,
-            {
-              headers: { 'X-Token': this.token },
-            },
-          )
-          .catch((error) => {
-            if (error.response && error.response.data.message) {
-              this.setError(error.response.data.message);
-            } else {
-              this.setError(error.message);
-            }
-          });
-      } else {
-        this.codeStopWatch = false;
-      }
+    'code.data': {
+      deep: true, // true since code contains many things
+      handler() {
+        if (this.connection === null) {
+          this.setError('未建立连接，代码区无法同步！');
+          return;
+        }
+        if (this.connection.socket === null) {
+          this.setError('连接已断开，代码区无法同步！请在新打开的窗口中执行操作！');
+          return;
+        }
+        if (!this.codeStopWatch) {
+          console.log('I changed the code. Send...');
+          this.code.time = Date.now();
+          this.connection.send({ code: this.code });
+          axios
+            .post(
+              `${API_URL}/interview/${this.id}/history/code`,
+              // Use time in server
+              this.code.data,
+              {
+                headers: { 'X-Token': this.token },
+              },
+            )
+            .catch((error) => {
+              if (error.response && error.response.data.message) {
+                this.setError(error.response.data.message);
+              } else {
+                this.setError(error.message);
+              }
+            });
+        } else {
+          this.codeStopWatch = false;
+        }
+      },
     },
     'drawing.data': function () {
       if (this.connection === null) {
