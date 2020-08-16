@@ -4,52 +4,70 @@
       <golden-layout :hasHeaders="false" class="hscreen">
         <gl-row>
           <gl-col>
+            <gl-component>
+              <codemirror v-model="code.data.text" :options="cmOptions" />
+            </gl-component>
             <!-- TODO -->
             <gl-component>
-              <v-row>
+              <v-row class="ml-2 mt-2 mr-0">
+                  <v-col>
+                  <v-select
+                    v-model="code.data.timeLimit"
+                    :items="supportedTimeLimits"
+                    label="时间限制"
+                    :dense="true"
+                    :disabled="role == 3"
+                  ></v-select>
+                </v-col>
                 <v-col>
+                  <v-select
+                    v-model="code.data.memoryLimit"
+                    :items="supportedMemoryLimits"
+                    label="内存限制"
+                    :dense="true"
+                    :disabled="role == 3"
+                  ></v-select>
+                  <!-- TODO use rolemap -->
+                </v-col>
+                  <v-col>
                   <v-select
                     v-model="code.data.lang"
                     :items="supportedLangs"
-                    label="Language"
+                    label="语言"
                     :dense="true"
                   ></v-select>
                 </v-col>
                 <v-col>
-                  <v-btn>Run</v-btn>
+                  <v-btn @click="runCode">运行</v-btn>
+                  <!-- TODO float to right -->
                 </v-col>
               </v-row>
-              <v-row>
+              <v-row class="ml-2 mr-0">
                 <v-col>
                   <v-textarea
                     name="input"
-                    label="Input"
+                    label="输入"
                     :filled="true"
                     :dense="true"
-                    rows="2"
                     v-model="code.data.input"
                   ></v-textarea>
                 </v-col>
                 <v-col>
                   <v-textarea
                     name="output"
-                    label="Output"
+                    label="输出"
                     :filled="true"
                     :dense="true"
-                    rows="2"
                     v-model="code.data.output"
                     :readonly="true"
                   ></v-textarea>
                 </v-col>
               </v-row>
-              </gl-component>
-            <gl-component>
-              <codemirror v-model="code.data.text" :options="cmOptions" />
             </gl-component>
             <gl-component>
               <DrawingBoard v-model="drawing.data" />
             </gl-component>
-          </gl-col>
+            </gl-col>
           <gl-col>
             <gl-row>
               <!-- TODO click to switch between three modes -->
@@ -158,12 +176,42 @@ export default Vue.extend({
         },
       ],
 
+      supportedTimeLimits: [
+        {
+          text: '10ms',
+          value: '10',
+        },
+        {
+          text: '100ms',
+          value: '100',
+        },
+        {
+          text: '1000ms',
+          value: '1000',
+        },
+      ],
+      supportedMemoryLimits: [
+        {
+          text: '100KB',
+          value: '100',
+        },
+        {
+          text: '1MB',
+          value: '1000',
+        },
+        {
+          text: '10MB',
+          value: '10000',
+        },
+      ],
       code: {
         time: Date.now(),
         data: {
           lang: 'c',
-          input: 'J',
-          output: 'Hello world.',
+          timeLimit: '100',
+          memoryLimit: '100',
+          input: '',
+          output: '',
           text: `// A weird HelloWorld in C
 // https://codegolf.stackexchange.com/a/22596
 #include <stdio.h>
@@ -517,6 +565,25 @@ int main() {
         },
         type: 'image',
       });
+    },
+    runCode() {
+      axios
+        .post(`${API_URL}/oj-interface/result`, {
+          lang: this.code.data.lang,
+          code: this.code.data.text,
+          input: this.code.data.input,
+        })
+        .then((response: any) => {
+          this.code.data.output = `[${response.data.message}]\n${response.data.result}`;
+          this.setInfo('运行成功');
+        })
+        .catch((error) => {
+          if (error.response && error.response.data.message) {
+            this.setError(error.response.data.message);
+          } else {
+            this.setError(error.message);
+          }
+        });
     },
   },
 
