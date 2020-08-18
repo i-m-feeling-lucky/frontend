@@ -450,86 +450,6 @@ export default Vue.extend({
           (interview: any) => interview.hr === this.getUser.id,
         );
         this.panel = [0, 1];
-        // TODO: 因为后端还没实现，所以在这里临时使用一些自己编的数据
-        this.interviews = [
-          {
-            id: 1,
-            hr: 7,
-            interviewer: 99,
-            interviewee: 'abc@abc.com',
-            token: 'testtoken1',
-            // eslint-disable-next-line
-            start_time: moment('2020-07-25T07:00:00').unix(), // 时间戳，格林威治时间1970年1月1日0时0分0秒至今的秒数
-            length: 30, // 面试时长（分钟）
-            status: 'upcoming',
-          },
-          {
-            id: 2,
-            hr: 6,
-            interviewer: 8,
-            interviewee: 'jackweller@gmail.com',
-            token: 'testtoken2',
-            // eslint-disable-next-line
-            start_time: moment('2020-07-27T08:00:00').unix(),
-            length: 30,
-            status: 'ended',
-          },
-          {
-            id: 3,
-            hr: 6,
-            interviewer: 8,
-            interviewee: 'yusanshi@163.com',
-            token: 'testtoken3',
-            // eslint-disable-next-line
-            start_time: moment('2020-07-27T09:30:00').unix(),
-            length: 60,
-            status: 'ended',
-          },
-          {
-            id: 4,
-            hr: 6,
-            interviewer: 8,
-            interviewee: 'anothertest@gmail.com',
-            token: 'testtoken4',
-            // eslint-disable-next-line
-            start_time: moment('2020-07-28T13:00:00').unix(),
-            length: 40,
-            status: 'ended',
-          },
-          {
-            id: 5,
-            hr: 6,
-            interviewer: 8,
-            interviewee: 'fortest@126.com',
-            token: 'testtoken5',
-            // eslint-disable-next-line
-            start_time: moment('2020-07-28T16:00:00').unix(),
-            length: 50,
-            status: 'ended',
-          },
-          {
-            id: 6,
-            hr: 6,
-            interviewer: 8,
-            interviewee: 'anothertest@gmail.com',
-            token: 'testtoken6',
-            // eslint-disable-next-line
-            start_time: moment('2020-07-25T13:00:00').unix(),
-            length: 40,
-            status: 'active',
-          },
-          {
-            id: 7,
-            hr: 6,
-            interviewer: 8,
-            interviewee: 'fortest@126.com',
-            token: 'testtoken7',
-            // eslint-disable-next-line
-            start_time: moment('2020-05-01T16:00:00').unix(),
-            length: 50,
-            status: 'ended',
-          },
-        ].filter((interview) => interview.hr === this.getUser.id);
       }).catch((error) => {
         if (error.response) {
           this.setError(`Error: ${error.response.status.toString()} ${error.response.statusText}`);
@@ -559,32 +479,6 @@ export default Vue.extend({
         } else {
           this.setError('Error: 生成请求时发生异常');
         }
-        // TODO: 因为后端还没实现，所以在这里临时使用一些自己编的数据
-        const data = {
-          interviewers: [
-            8,
-          ],
-          interviewees: [
-            {
-              email: 'jackweller@gmail.com',
-            },
-            {
-              email: 'yusanshi@163.com',
-            },
-            {
-              email: 'anothertest@gmail.com',
-            },
-            {
-              email: 'fortest@126.com',
-            },
-          ],
-        };
-        this.interviewerIDs = data.interviewers.map(
-          (interviewer: number) => interviewer.toString(),
-        );
-        this.intervieweeEmails = data.interviewees.map(
-          (interviewee: any) => interviewee.email,
-        );
       });
   },
 });
