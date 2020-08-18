@@ -115,11 +115,6 @@ export default Vue.extend({
               },
             ],
           },
-          {
-            icon: 'mdi-code-greater-than',
-            text: '题库管理',
-            to: '/console/problem-management',
-          },
           { heading: '其他' },
           {
             icon: 'mdi-bell',
