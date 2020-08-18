@@ -19,7 +19,7 @@
               <v-list-item
                 v-for="item in upcomingInterviews"
                 :key="item.id"
-                @click="$router.push({path: `/interview/${getUser.id}?token=${item.token}`})"
+                @click="$router.push({path: `/interview/${item.id}?token=${item.token}`})"
                 class="pa-0"
               >
                 <v-list-item-avatar>
@@ -77,7 +77,7 @@
               <v-list-item
                 v-for="item in activeInterviews"
                 :key="item.id"
-                @click="$router.push({path: `/interview/${getUser.id}?token=${item.token}`})"
+                @click="$router.push({path: `/interview/${item.id}?token=${item.token}`})"
                 class="pa-0"
               >
                 <v-list-item-avatar>
@@ -135,7 +135,7 @@
               <v-list-item
                 v-for="item in endedInterviews"
                 :key="item.id"
-                @click="$router.push({path: `/interview/${getUser.id}?token=${item.token}`})"
+                @click="$router.push({path: `/interview/${item.id}?token=${item.token}`})"
                 class="pa-0"
               >
                 <v-list-item-avatar>

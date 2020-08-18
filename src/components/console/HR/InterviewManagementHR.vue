@@ -17,10 +17,9 @@
             <v-divider></v-divider>
             <v-list two-line class="px-sm-4" v-if="upcomingInterviews.length">
               <template v-for="item in upcomingInterviews">
-                <!-- TODO: HR进入面试房间的token如何提供？目前这里写的这个是面试官的token，不是HR的 -->
                 <v-list-item
                   :key="item.id"
-                  @click="$router.push({path: `/interview/${getUser.id}?token=${item.token}`})"
+                  @click="$router.push({path: `/interview/${item.id}`})"
                   class="pa-0"
                 >
                   <v-list-item-avatar>
@@ -80,7 +79,7 @@
               <template v-for="item in activeInterviews">
                 <v-list-item
                   :key="item.id"
-                  @click="$router.push({path: `/interview/${getUser.id}?token=${item.token}`})"
+                  @click="$router.push({path: `/interview/${item.id}`})"
                   class="pa-0"
                 >
                   <v-list-item-avatar>
@@ -140,7 +139,7 @@
               <template v-for="item in endedInterviews">
                 <v-list-item
                   :key="item.id"
-                  @click="$router.push({path: `/interview/${getUser.id}?token=${item.token}`})"
+                  @click="$router.push({path: `/interview/${item.id}`})"
                   class="pa-0"
                 >
                   <v-list-item-avatar>
