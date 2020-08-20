@@ -686,6 +686,9 @@ int main() {
         }
       },
     },
+    'code.data.lang': function (val) {
+      console.log(val);
+    },
     'drawing.data': function () {
       if (this.connection === null) {
         this.setError('未建立连接，绘图无法同步！');
