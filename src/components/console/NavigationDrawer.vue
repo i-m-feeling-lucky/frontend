@@ -116,9 +116,26 @@ export default Vue.extend({
             ],
           },
           {
-            icon: 'mdi-code-greater-than',
-            text: '题库管理',
-            to: '/console/problem-management',
+            icon: 'mdi-account-box-multiple',
+            text: '用户查询',
+            model: false,
+            children: [
+              {
+                icon: 'mdi-duck',
+                text: 'HR',
+                to: '/console/user-search/HR',
+              },
+              {
+                icon: 'mdi-duck',
+                text: '面试官',
+                to: '/console/user-search/interviewer',
+              },
+              {
+                icon: 'mdi-duck',
+                text: '候选人',
+                to: '/console/user-search/interviewee',
+              },
+            ],
           },
           { heading: '其他' },
           {

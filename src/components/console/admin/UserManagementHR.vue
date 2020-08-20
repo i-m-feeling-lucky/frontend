@@ -284,10 +284,10 @@ export default Vue.extend({
         this.HRIDs1 = [response.data.filter(
           (user: any) => user.role === 1,
         )].map((user: any) => user.id.toString());
-        this.HRIDs1 = [response.data.filter(
+        this.HRIDs2 = [response.data.filter(
           (user: any) => user.role === 1,
         )].map((user: any) => user.id.toString());
-        this.HRIDs1 = [response.data.filter(
+        this.interviewerIDs = [response.data.filter(
           (user: any) => user.role === 2,
         )].map((user: any) => user.id.toString());
       }).catch((error) => {

@@ -34,16 +34,24 @@ const routes: Array<RouteConfig> = [
         component: () => import(/* webpackChunkName: "console" */ '@/components/console/UserManagementInterviewee.vue'),
       },
       {
+        path: 'user-search/HR',
+        component: () => import(/* webpackChunkName: "console-admin" */ '@/components/console/admin/UserSearchHR.vue'),
+      },
+      {
+        path: 'user-search/interviewer',
+        component: () => import(/* webpackChunkName: "console" */ '@/components/console/admin/UserSearchInterviewer.vue'),
+      },
+      {
+        path: 'user-search/interviewee',
+        component: () => import(/* webpackChunkName: "console" */ '@/components/console/admin/UserSearchInterviewee.vue'),
+      },
+      {
         path: 'interview-management-HR',
         component: () => import(/* webpackChunkName: "console-HR" */ '@/components/console/HR/InterviewManagementHR.vue'),
       },
       {
         path: 'interview-management-interviewer',
         component: () => import(/* webpackChunkName: "console-interviewer" */ '@/components/console/interviewer/InterviewManagementInterviewer.vue'),
-      },
-      {
-        path: 'problem-management',
-        component: () => import(/* webpackChunkName: "console-admin" */ '@/components/console/admin/ProblemManagement.vue'),
       },
       {
         path: 'notification',
