@@ -119,7 +119,8 @@ import vgl from 'vue-golden-layout';
 import roleMap from '@/utils/roleMap';
 import toBase64 from '@/utils/toBase64';
 import { dummyVerify } from '@/utils/dummyInterview';
-import 'codemirror/mode/javascript/javascript'; // TODO
+import 'codemirror/mode/clike/clike';
+import 'codemirror/mode/python/python';
 import 'codemirror/theme/base16-dark.css';
 import { codemirror } from 'vue-codemirror';
 import 'codemirror/lib/codemirror.css';
@@ -237,7 +238,7 @@ int main() {
 
       cmOptions: {
         tabSize: 2,
-        mode: 'text/javascript',
+        mode: 'text/x-csrc',
         theme: 'base16-dark',
         lineNumbers: true,
         line: true,
@@ -687,7 +688,13 @@ int main() {
       },
     },
     'code.data.lang': function (val) {
-      console.log(val);
+      if (val === 'c') {
+        this.cmOptions.mode = 'text/x-csrc';
+      } else if (val === 'cpp') {
+        this.cmOptions.mode = 'text/x-c++src';
+      } else if (val === 'python') {
+        this.cmOptions.mode = 'text/x-python';
+      }
     },
     'drawing.data': function () {
       if (this.connection === null) {
