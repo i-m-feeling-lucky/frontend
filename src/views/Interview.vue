@@ -1,4 +1,5 @@
 <template>
+  <!-- eslint-disable max-len -->
   <v-app>
     <v-main>
       <golden-layout :hasHeaders="false" class="hscreen">
@@ -10,7 +11,7 @@
             <!-- TODO -->
             <gl-component>
               <v-row class="ml-2 mt-2 mr-0">
-                  <v-col>
+                <v-col>
                   <v-select
                     v-model="code.data.timeLimit"
                     :items="supportedTimeLimits"
@@ -25,11 +26,10 @@
                     :items="supportedMemoryLimits"
                     label="内存限制"
                     :dense="true"
-                    :disabled="role == 3"
+                    :disabled="roleString == 'interviewee'"
                   ></v-select>
-                  <!-- TODO use rolemap -->
                 </v-col>
-                  <v-col>
+                <v-col>
                   <v-select
                     v-model="code.data.lang"
                     :items="supportedLangs"
@@ -67,7 +67,7 @@
             <gl-component>
               <DrawingBoard v-model="drawing.data" />
             </gl-component>
-            </gl-col>
+          </gl-col>
           <gl-col>
             <gl-row>
               <!-- TODO click to switch between three modes -->
@@ -103,6 +103,44 @@
           </gl-col>
         </gl-row>
       </golden-layout>
+        <v-dialog v-model="scoreDialog" max-width="600px">
+          <v-card>
+            <v-card-title>
+              <span class="headline">面试评价</span>
+            </v-card-title>
+            <v-card-text>
+              <v-container>
+                <v-row>
+                  <v-col cols="12">
+                    评级<v-rating :hover="true" v-model="evaluation.rate"></v-rating>
+                  </v-col>
+                  <v-col cols="12">
+                    评语<v-textarea v-model="evaluation.comment" rows="3"></v-textarea>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" text @click="submitEvaluation">提交评价</v-btn>
+              <v-btn color="blue darken-1" text @click="submitEvaluationAndFinish"
+                >提交评价并结束面试</v-btn
+              >
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      <v-btn
+        v-if="roleString === 'interviewer'"
+        @click.stop="scoreDialog = true"
+        color="primary"
+        fixed
+        fab
+        bottom
+        right
+        large
+      >
+        <v-icon>mdi-star</v-icon>
+      </v-btn>
     </v-main>
   </v-app>
 </template>
@@ -295,10 +333,19 @@ int main() {
           borderRadius: '50%',
         },
       },
+
+      scoreDialog: false,
+      evaluation: {
+        rate: 0,
+        comment: '',
+      },
     };
   },
   computed: {
     ...mapGetters(['getError', 'getInfo']),
+    roleString(): string {
+      return roleMap[this.role];
+    },
   },
   methods: {
     ...mapMutations(['setError', 'setInfo']),
@@ -381,7 +428,7 @@ int main() {
               myself:
                 // If current user is HR, display interviewer's message on the right
                 // by setting `myself` true
-                roleMap[this.role] === 'HR'
+                this.roleString === 'HR'
                   ? roleMap[event.data.chat.participantId] === 'interviewer'
                   : event.data.chat.participantId === this.role,
             }),
@@ -401,7 +448,7 @@ int main() {
         }
       };
 
-      if (roleMap[this.role] === 'HR') {
+      if (this.roleString === 'HR') {
         this.setInfo('你是 HR，正在旁观中');
         this.connection.dontCaptureUserMedia = true;
         // TODO currently HR can only get remote stream in the beginning
@@ -416,7 +463,7 @@ int main() {
           }
         };
         this.connection.openOrJoin(this.id.toString());
-      } else if (roleMap[this.role] === 'interviewer') {
+      } else if (this.roleString === 'interviewer') {
         this.setInfo('你是面试官，请面试');
         this.connection.onstream = (event: any) => {
           const videoElement = event.mediaElement;
@@ -440,7 +487,7 @@ int main() {
           }
         };
         this.connection.openOrJoin(this.id.toString());
-      } else if (roleMap[this.role] === 'interviewee') {
+      } else if (this.roleString === 'interviewee') {
         this.setInfo('你是候选人，请接受面试');
         this.connection.onstream = (event: any) => {
           const videoElement = event.mediaElement;
@@ -586,6 +633,48 @@ int main() {
           }
         });
     },
+    submitEvaluation() {
+      if (this.evaluation.rate === 0) {
+        this.setError('评级不能为零！');
+        return;
+      }
+      if (this.evaluation.comment === '') {
+        this.setError('评语不能为空！');
+        return;
+      }
+      axios
+        .put(`${API_URL}/interview/${this.id}/evaluation`, this.evaluation, {
+          headers: { 'X-Token': this.token },
+        })
+        .then(() => {
+          this.scoreDialog = false;
+        })
+        .catch((error) => {
+          if (error.response && error.response.data.message) {
+            this.setError(error.response.data.message);
+          } else {
+            this.setError(error.message);
+          }
+        });
+    },
+    submitEvaluationAndFinish() {
+      this.submitEvaluation();
+      axios
+        .put(
+          `${API_URL}/interview/${this.id}/status`,
+          { status: 'ended' },
+          {
+            headers: { 'X-Token': this.token },
+          },
+        )
+        .catch((error) => {
+          if (error.response && error.response.data.message) {
+            this.setError(error.response.data.message);
+          } else {
+            this.setError(error.message);
+          }
+        });
+    },
   },
 
   mounted() {
@@ -611,18 +700,17 @@ int main() {
       .then((response: any) => {
         this.role = response.data.role;
         this.password = response.data.password;
-        const roleString = roleMap[this.role];
-        if (roleString === 'interviewee') {
+        if (this.roleString === 'interviewee') {
           this.participants[0].name = '面试官';
           this.participants[0].id = roleMap.indexOf('interviewer');
           this.myself.name = '候选人'; // TODO real name
           this.myself.id = roleMap.indexOf('interviewee');
-        } else if (roleString === 'interviewer') {
+        } else if (this.roleString === 'interviewer') {
           this.participants[0].name = '候选人'; // TODO real name
           this.participants[0].id = roleMap.indexOf('interviewee');
           this.myself.name = '面试官';
           this.myself.id = roleMap.indexOf('interviewer');
-        } else if (roleString === 'HR') {
+        } else if (this.roleString === 'HR') {
           this.participants[0].name = '候选人'; // TODO real name
           this.participants[0].id = roleMap.indexOf('interviewee');
           this.myself.name = '面试官';
