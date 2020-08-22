@@ -96,7 +96,7 @@ import { fabric } from 'fabric';
 
 export default Vue.extend({
   name: 'DrawingBoard',
-  props: ['value'],
+  props: ['value', 'readonly'],
   data() {
     return {
       mouseFrom: {} as any,
@@ -320,7 +320,9 @@ export default Vue.extend({
     this.canvas.on('mouse:down', (options: any) => {
       this.mouseFrom.x = options.e.offsetX;
       this.mouseFrom.y = options.e.offsetY;
-      this.isDrawing = true;
+      if (!this.readonly) {
+        this.isDrawing = true;
+      }
       if (this.drawType === 'text') {
         this.drawing();
       }
@@ -398,7 +400,9 @@ export default Vue.extend({
           that.textbox = null;
         }
         if (that.drawType === 'pen') {
-          that.canvas.isDrawingMode = true;
+          if (!that.readonly) {
+            that.canvas.isDrawingMode = true;
+          }
         } else if (that.drawType === 'remove') {
           that.canvas.selection = true;
           that.canvas.skipTargetFind = false;
@@ -416,6 +420,11 @@ export default Vue.extend({
         return;
       }
       this.canvas.loadFromJSON(val, this.canvas.renderAll.bind(this.canvas));
+    },
+    readonly(val) {
+      if (val) {
+        this.canvas.isDrawingMode = false;
+      }
     },
   },
 });

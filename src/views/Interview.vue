@@ -17,7 +17,7 @@
                     :items="supportedTimeLimits"
                     label="时间限制"
                     :dense="true"
-                    :disabled="role == 3"
+                    :readonly="roleString == 'interviewee' || inReplayMode"
                   ></v-select>
                 </v-col>
                 <v-col>
@@ -26,7 +26,7 @@
                     :items="supportedMemoryLimits"
                     label="内存限制"
                     :dense="true"
-                    :disabled="roleString == 'interviewee'"
+                    :readonly="roleString == 'interviewee' || inReplayMode"
                   ></v-select>
                 </v-col>
                 <v-col>
@@ -35,10 +35,11 @@
                     :items="supportedLangs"
                     label="语言"
                     :dense="true"
+                    :readonly="inReplayMode"
                   ></v-select>
                 </v-col>
                 <v-col>
-                  <v-btn @click="runCode">运行</v-btn>
+                  <v-btn @click="runCode" :disabled="inReplayMode">运行</v-btn>
                   <!-- TODO float to right -->
                 </v-col>
               </v-row>
@@ -50,6 +51,7 @@
                     :filled="true"
                     rows="3"
                     v-model="code.data.input"
+                    :readonly="inReplayMode"
                   ></v-textarea>
                 </v-col>
                 <v-col>
@@ -66,7 +68,7 @@
             </gl-component>
 
             <gl-component>
-              <DrawingBoard v-model="drawing.data" />
+              <DrawingBoard v-model="drawing.data" :readonly="inReplayMode" />
             </gl-component>
           </gl-col>
           <gl-col>
@@ -218,7 +220,7 @@
           small
           color="green"
           @click.stop="replayHelpDialog = true"
-          v-if="roleString === 'HR' && interviewInfo.status === 'ended'"
+          v-if="inReplayMode"
         >
           <v-icon>mdi-help-circle-outline</v-icon>
         </v-btn>
@@ -230,7 +232,7 @@
         </div>
       </v-overlay>
       <v-overlay :value="notStartedOverlay" z-index="20" opacity="0.7">
-        <div class="text-h3 font-weight-bold">面试还未开始，请耐心等待</div>
+        <div class="text-h3 font-weight-bold">面试将于 {{new Date(interviewInfo.start_time).toLocaleString('zh-cn')}} 开始，请耐心等待</div>
       </v-overlay>
       <v-overlay :value="finishOverlay" z-index="20" opacity="0.7">
         <div class="text-h3 font-weight-bold">面试已经结束</div>
@@ -379,6 +381,7 @@ int main() {
         matchBrackets: true,
         showCursorWhenSelecting: true,
         autoRefresh: true,
+        readOnly: false,
       },
 
       placeholder: '点击编辑你的消息',
@@ -451,11 +454,11 @@ int main() {
         id: 0,
         hr: 0,
         interviewer: 0,
-        interviewee: 'interviewee@lucky.com',
+        interviewee: 'unknown@lucky.com',
         // eslint-disable-next-line @typescript-eslint/camelcase
         start_time: new Date().getTime(),
-        length: 45,
-        status: 'ended',
+        length: 30,
+        status: 'ended', // TODO
       },
       statusMap: {
         upcoming: '未开始',
@@ -471,6 +474,17 @@ int main() {
       },
       progressTimeoutID: 0,
       isCtrlPressed: false,
+      replayData: {
+        chat: [],
+        whiteboard: [],
+        code: [],
+      },
+      // Use which value in replayData
+      replayIndex: {
+        chat: 0,
+        whiteboard: 0,
+        code: 0,
+      },
     };
   },
   computed: {
@@ -478,10 +492,13 @@ int main() {
     roleString(): string {
       return roleMap[this.role];
     },
+    inReplayMode(): boolean {
+      return this.roleString === 'HR' && this.interviewInfo.status === 'ended';
+    },
   },
   methods: {
     ...mapMutations(['setError', 'setInfo']),
-    resume() {
+    resumeInterview() {
       // Restore chat, drawingboard and code history
       axios
         .get(`${API_URL}/interview/${this.id}/history/chat?scope=all`, {
@@ -490,7 +507,8 @@ int main() {
         .then((response) => {
           this.messages = response.data.map((m: any) => ({
             ...m.data,
-            timestamp: m.time, // TODO change format here
+            time: m.time, // for quicker search in replay
+            timestamp: new Date(m.time).toISOString(),
           }));
         })
         .catch((error) => {
@@ -675,6 +693,7 @@ int main() {
         return;
       }
       this.messages.push(message);
+      console.log(message);
       this.connection.send({ chat: message });
       axios
         .post(
@@ -872,6 +891,56 @@ int main() {
           this.replayProgress.current + 1,
         );
       }, 1000);
+
+      axios
+        .get(`${API_URL}/interview/${this.id}/history/chat?scope=all`, {
+          headers: { 'X-Token': this.token },
+        })
+        .then((response) => {
+          this.replayData.chat = response.data.map((m: any) => ({
+            ...m.data,
+            timestamp: new Date(m.time).toISOString(),
+          }));
+        })
+        .catch((error) => {
+          if (error.response && error.response.data.message) {
+            this.setError(error.response.data.message);
+          } else {
+            this.setError(error.message);
+          }
+        });
+      axios
+        .get(`${API_URL}/interview/${this.id}/history/whiteboard?scope=all`, {
+          headers: { 'X-Token': this.token },
+        })
+        .then((response) => {
+          if (response.data.length !== 0) {
+            this.replayData.whiteboard = response.data;
+          }
+        })
+        .catch((error) => {
+          if (error.response && error.response.data.message) {
+            this.setError(error.response.data.message);
+          } else {
+            this.setError(error.message);
+          }
+        });
+      axios
+        .get(`${API_URL}/interview/${this.id}/history/code?scope=all`, {
+          headers: { 'X-Token': this.token },
+        })
+        .then((response) => {
+          if (response.data.length !== 0) {
+            this.replayData.code = response.data;
+          }
+        })
+        .catch((error) => {
+          if (error.response && error.response.data.message) {
+            this.setError(error.response.data.message);
+          } else {
+            this.setError(error.message);
+          }
+        });
     },
   },
 
@@ -913,8 +982,7 @@ int main() {
           this.participants[0].id = roleMap.indexOf('interviewee');
           this.myself.name = '面试官';
           this.myself.id = roleMap.indexOf('interviewer');
-          this.placeholder = '您只能旁观，不能发送信息';
-          document.querySelectorAll('.quick-chat-container .container-send-message').forEach((e) => {
+          document.querySelectorAll('.quick-chat-container .container-message-manager').forEach((e) => {
             (e as HTMLElement).style.display = 'none';
           });
           document
@@ -926,10 +994,11 @@ int main() {
         if (this.interviewInfo.status === 'upcoming') {
           this.notStartedOverlay = true;
         } else if (this.interviewInfo.status === 'active') {
-          this.resume();
+          this.resumeInterview();
           this.initializeInterview();
         } else if (this.interviewInfo.status === 'ended') {
           if (this.roleString === 'HR') {
+            this.cmOptions.readOnly = true;
             this.initializeReplay();
           } else {
             this.finishOverlay = true;
@@ -949,6 +1018,9 @@ int main() {
     'code.data': {
       deep: true, // true since code contains many things
       handler() {
+        if (this.inReplayMode) {
+          return;
+        }
         if (this.connection === null) {
           this.setError('未建立连接，代码区无法同步！');
           return;
@@ -992,6 +1064,9 @@ int main() {
       }
     },
     'drawing.data': function () {
+      if (this.inReplayMode) {
+        return;
+      }
       if (this.connection === null) {
         this.setError('未建立连接，绘图无法同步！');
         return;
@@ -1022,6 +1097,31 @@ int main() {
           });
       } else {
         this.drawingStopWatch = false;
+      }
+    },
+    'replayProgress.current': function () {
+      const currentTime = this.interviewInfo.start_time + this.replayProgress.current;
+      console.log(this.replayData);
+
+      while (this.replayIndex.chat in this.replayData.chat && (this.replayData.chat[this.replayIndex.chat] as any).time < currentTime) {
+        this.replayIndex.chat += 1;
+      }
+      this.messages = this.replayData.chat.slice(0, this.replayIndex.chat);
+
+      while (this.replayIndex.whiteboard in this.replayData.whiteboard && (this.replayData.whiteboard[this.replayIndex.whiteboard] as any).time < currentTime) {
+        this.replayIndex.whiteboard += 1;
+      }
+      this.replayIndex.whiteboard -= 1;
+      if (this.replayIndex.whiteboard in this.replayData.whiteboard) {
+        this.drawing = this.replayData.whiteboard[this.replayIndex.whiteboard];
+      }
+
+      while (this.replayIndex.code in this.replayData.code && (this.replayData.code[this.replayIndex.code] as any).time < currentTime) {
+        this.replayIndex.code += 1;
+      }
+      this.replayIndex.code -= 1;
+      if (this.replayIndex.code in this.replayData.code) {
+        this.code = this.replayData.code[this.replayIndex.code];
       }
     },
   },
