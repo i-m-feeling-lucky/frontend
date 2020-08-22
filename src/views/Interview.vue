@@ -48,7 +48,7 @@
                     name="input"
                     label="输入"
                     :filled="true"
-                    :dense="true"
+                    rows="3"
                     v-model="code.data.input"
                   ></v-textarea>
                 </v-col>
@@ -57,27 +57,19 @@
                     name="output"
                     label="输出"
                     :filled="true"
-                    :dense="true"
+                    rows="3"
                     v-model="code.data.output"
                     :readonly="true"
                   ></v-textarea>
                 </v-col>
               </v-row>
             </gl-component>
+
             <gl-component>
               <DrawingBoard v-model="drawing.data" />
             </gl-component>
           </gl-col>
           <gl-col>
-            <gl-row>
-              <!-- TODO click to switch between three modes -->
-              <gl-component>
-                <div id="video-container-interviewer" class="video-container"></div>
-              </gl-component>
-              <gl-component
-                ><div id="video-container-interviewee" class="video-container"></div>
-              </gl-component>
-            </gl-row>
             <gl-component
               ><Chat
                 :participants="participants"
@@ -100,47 +92,149 @@
               >
               </Chat>
             </gl-component>
+            <gl-row>
+              <!-- TODO click to switch between three modes -->
+              <gl-component>
+                <div id="video-container-interviewer" class="video-container"></div>
+              </gl-component>
+              <gl-component
+                ><div id="video-container-interviewee" class="video-container"></div>
+              </gl-component>
+            </gl-row>
           </gl-col>
         </gl-row>
       </golden-layout>
-        <v-dialog v-model="scoreDialog" max-width="600px">
-          <v-card>
-            <v-card-title>
-              <span class="headline">面试评价</span>
-            </v-card-title>
-            <v-card-text>
-              <v-container>
-                <v-row>
-                  <v-col cols="12">
-                    评级<v-rating :hover="true" v-model="evaluation.rate"></v-rating>
-                  </v-col>
-                  <v-col cols="12">
-                    评语<v-textarea v-model="evaluation.comment" rows="3"></v-textarea>
-                  </v-col>
-                </v-row>
-              </v-container>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="submitEvaluation">提交评价</v-btn>
-              <v-btn color="blue darken-1" text @click="submitEvaluationAndFinish"
-                >提交评价并结束面试</v-btn
-              >
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-      <v-btn
-        v-if="roleString === 'interviewer'"
-        @click.stop="scoreDialog = true"
-        color="primary"
-        fixed
-        fab
-        bottom
-        right
-        large
-      >
-        <v-icon>mdi-star</v-icon>
-      </v-btn>
+      <v-dialog v-model="scoreDialog" max-width="600px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">面试评价</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  评级<v-rating :hover="true" v-model="evaluation.rate"></v-rating>
+                </v-col>
+                <v-col cols="12">
+                  评语<v-textarea v-model="evaluation.comment" rows="3"></v-textarea>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue darken-1" text @click="submitEvaluation">提交评价</v-btn>
+            <v-btn color="blue darken-1" text @click="submitEvaluationAndFinish"
+              >提交评价并结束面试</v-btn
+            >
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="infoDialog" max-width="600px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">面试信息</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="12" sm="6">
+                  <v-text-field :value="interviewInfo.id" label="面试 ID" readonly></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <v-text-field
+                    :value="statusMap[interviewInfo.status]"
+                    label="面试状态"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <v-text-field
+                    :value="new Date(interviewInfo.start_time).toLocaleString('zh-cn')"
+                    label="开始时间"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <v-text-field
+                    :value="`${interviewInfo.length} 分钟`"
+                    label="面试时长"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    :value="interviewInfo.interviewee"
+                    label="面试者"
+                    readonly
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="replayHelpDialog" max-width="400px">
+        <v-card>
+          <v-card-title class="headline ">
+            回放帮助
+          </v-card-title>
+          <v-card-text>
+            按住空格键以显示当前进度；<br />
+            按 <code>←</code> 后退 10 秒；<br />
+            按 <code>→</code> 前进 10 秒；<br />
+            按 <code>Ctrl + ←</code> 后退 60 秒；<br />
+            按 <code>Ctrl + →</code> 前进 60 秒。<br />
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue darken-1" text @click="replayHelpDialog = false">知道啦</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-speed-dial v-model="fab" bottom right fixed direction="top">
+        <template v-slot:activator>
+          <v-btn v-model="fab" color="blue darken-2" dark fab>
+            <v-icon v-if="fab">mdi-close</v-icon>
+            <v-icon v-else>mdi-dots-horizontal</v-icon>
+          </v-btn>
+        </template>
+        <v-btn
+          fab
+          dark
+          small
+          color="indigo"
+          @click.stop="scoreDialog = true"
+          v-if="roleString === 'interviewer'"
+        >
+          <v-icon>mdi-star</v-icon>
+        </v-btn>
+        <v-btn fab dark small color="red" @click.stop="infoDialog = true">
+          <v-icon>mdi-information-outline</v-icon>
+        </v-btn>
+        <v-btn
+          fab
+          dark
+          small
+          color="green"
+          @click.stop="replayHelpDialog = true"
+          v-if="roleString === 'HR' && interviewInfo.status === 'ended'"
+        >
+          <v-icon>mdi-help-circle-outline</v-icon>
+        </v-btn>
+      </v-speed-dial>
+
+      <v-overlay :value="progressOverlay" z-index="20" opacity="0.7">
+        <div class="text-h2 font-weight-bold">
+          {{ second2MMSS(replayProgress.current) }} / {{ second2MMSS(replayProgress.total) }}
+        </div>
+      </v-overlay>
+      <v-overlay :value="notStartedOverlay" z-index="20" opacity="0.7">
+        <div class="text-h3 font-weight-bold">面试还未开始，请耐心等待</div>
+      </v-overlay>
+      <v-overlay :value="finishOverlay" z-index="20" opacity="0.7">
+        <div class="text-h3 font-weight-bold">面试已经结束</div>
+      </v-overlay>
     </v-main>
   </v-app>
 </template>
@@ -335,10 +429,48 @@ int main() {
       },
 
       scoreDialog: false,
+      infoDialog: false,
+      replayHelpDialog: false,
       evaluation: {
         rate: 0,
         comment: '',
       },
+      fab: false,
+      // interviewInfo: {
+      //   id: 0,
+      //   hr: 0,
+      //   interviewer: 0,
+      //   interviewee: '',
+      //   // eslint-disable-next-line @typescript-eslint/camelcase
+      //   start_time: 0,
+      //   length: 0,
+      //   status: 'unknown',
+      // },
+      interviewInfo: {
+        // TODO
+        id: 0,
+        hr: 0,
+        interviewer: 0,
+        interviewee: 'interviewee@lucky.com',
+        // eslint-disable-next-line @typescript-eslint/camelcase
+        start_time: new Date().getTime(),
+        length: 45,
+        status: 'ended',
+      },
+      statusMap: {
+        upcoming: '未开始',
+        active: '正在进行',
+        ended: '已结束',
+      },
+      progressOverlay: false,
+      notStartedOverlay: false,
+      finishOverlay: false,
+      replayProgress: {
+        current: 0,
+        total: 45 * 60, // TODO
+      },
+      progressTimeoutID: 0,
+      isCtrlPressed: false,
     };
   },
   computed: {
@@ -401,7 +533,7 @@ int main() {
           }
         });
     },
-    initializeConnection() {
+    initializeInterview() {
       this.connection = new RTCMultiConnection();
       // TODO set enableLogs to false
       // TODO stun server
@@ -675,9 +807,75 @@ int main() {
           }
         });
     },
+    getInterviewInfo() {
+      axios
+        .get(`${API_URL}/interview/${this.id}`, {
+          headers: { 'X-Token': this.token },
+        })
+        .then((response) => {
+          this.interviewInfo = response.data;
+        })
+        .catch((error) => {
+          if (error.response && error.response.data.message) {
+            this.setError(error.response.data.message);
+          } else {
+            this.setError(error.message);
+          }
+        });
+    },
+    second2MMSS(seconds: number): string {
+      const timeString = new Date(seconds * 1000).toISOString();
+      if (seconds <= 60 * 60) {
+        return timeString.substr(14, 5);
+      }
+      return timeString.substr(11, 8);
+    },
+    initializeReplay() {
+      this.setInfo('你是 HR，正在观看回放中');
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'ControlLeft' || e.code === 'ControlRight') {
+          this.isCtrlPressed = true;
+        } else if (e.code === 'Space') {
+          this.progressOverlay = true;
+        } else if (e.code === 'ArrowLeft') {
+          this.replayProgress.current = Math.max(
+            0,
+            this.replayProgress.current - (this.isCtrlPressed ? 60 : 10),
+          );
+          this.progressOverlay = true;
+          window.clearTimeout(this.progressTimeoutID);
+          this.progressTimeoutID = window.setTimeout(() => {
+            this.progressOverlay = false;
+          }, 1000);
+        } else if (e.code === 'ArrowRight') {
+          this.replayProgress.current = Math.min(
+            this.replayProgress.total,
+            this.replayProgress.current + (this.isCtrlPressed ? 60 : 10),
+          );
+          this.progressOverlay = true;
+          window.clearTimeout(this.progressTimeoutID);
+          this.progressTimeoutID = window.setTimeout(() => {
+            this.progressOverlay = false;
+          }, 1000);
+        }
+      });
+      window.addEventListener('keyup', (e) => {
+        if (e.code === 'ControlLeft' || e.code === 'ControlRight') {
+          this.isCtrlPressed = false;
+        } else if (e.code === 'Space') {
+          this.progressOverlay = false;
+        }
+      });
+      window.setInterval(() => {
+        this.replayProgress.current = Math.min(
+          this.replayProgress.total,
+          this.replayProgress.current + 1,
+        );
+      }, 1000);
+    },
   },
 
-  mounted() {
+  created() {
     this.id = +this.$route.params.id;
     this.token = this.$route.query.token as string;
     if (this.token === undefined) {
@@ -723,8 +921,20 @@ int main() {
             .querySelector('.quick-chat-container .message-input')!
             .setAttribute('contenteditable', 'false');
         }
-        // this.resume(); #TODO
-        this.initializeConnection();
+        this.getInterviewInfo();
+
+        if (this.interviewInfo.status === 'upcoming') {
+          this.notStartedOverlay = true;
+        } else if (this.interviewInfo.status === 'active') {
+          this.resume();
+          this.initializeInterview();
+        } else if (this.interviewInfo.status === 'ended') {
+          if (this.roleString === 'HR') {
+            this.initializeReplay();
+          } else {
+            this.finishOverlay = true;
+          }
+        }
       })
       .catch((error) => {
         if (error.response && error.response.data.message) {
@@ -733,12 +943,9 @@ int main() {
           this.setError(error.message);
         }
       });
-
-    // TODO reorder based on screen size
   },
 
   watch: {
-    // TODO this?
     'code.data': {
       deep: true, // true since code contains many things
       handler() {
@@ -823,8 +1030,8 @@ int main() {
 
 <style>
 .hscreen {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
 }
 .video-container,
 video {
