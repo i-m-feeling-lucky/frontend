@@ -252,7 +252,6 @@ import io from 'socket.io-client';
 import vgl from 'vue-golden-layout';
 import roleMap from '@/utils/roleMap';
 import toBase64 from '@/utils/toBase64';
-import { dummyVerify } from '@/utils/dummyInterview';
 import 'codemirror/mode/clike/clike';
 import 'codemirror/mode/python/python';
 import 'codemirror/theme/base16-dark.css';
@@ -959,11 +958,10 @@ int main() {
       return;
     }
     // Verify the token, then initialize the interview
-    // axios
-    //   .get(`${API_URL}/interview/${this.id}/verify`, {
-    //     headers: { 'X-Token': this.token },
-    //   })
-    dummyVerify(this.id, this.token) // TODO
+    axios
+      .get(`${API_URL}/interview/${this.id}/verify`, {
+        headers: { 'X-Token': this.token },
+      })
       .then((response: any) => {
         this.role = response.data.role;
         this.password = response.data.password;
