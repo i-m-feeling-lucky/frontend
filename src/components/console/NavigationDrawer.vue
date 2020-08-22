@@ -139,12 +139,6 @@ export default Vue.extend({
           },
           { heading: '其他' },
           {
-            icon: 'mdi-bell',
-            text: '通知',
-            to: '/console/notification',
-            badge: 42,
-          },
-          {
             icon: 'mdi-card-account-details',
             text: '个人信息',
             to: '/console/profile',
@@ -179,12 +173,6 @@ export default Vue.extend({
           },
           { heading: '其他' },
           {
-            icon: 'mdi-bell',
-            text: '通知',
-            to: '/console/notification',
-            badge: '99+',
-          },
-          {
             icon: 'mdi-card-account-details',
             text: '个人信息',
             to: '/console/profile',
@@ -218,12 +206,6 @@ export default Vue.extend({
             to: '/console/free-time',
           },
           { heading: '其他' },
-          {
-            icon: 'mdi-bell',
-            text: '通知',
-            to: '/console/notification',
-            badge: 23,
-          },
           {
             icon: 'mdi-card-account-details',
             text: '个人信息',

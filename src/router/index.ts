@@ -54,10 +54,6 @@ const routes: Array<RouteConfig> = [
         component: () => import(/* webpackChunkName: "console-interviewer" */ '@/components/console/interviewer/InterviewManagementInterviewer.vue'),
       },
       {
-        path: 'notification',
-        component: () => import(/* webpackChunkName: "console" */ '@/components/console/Notification.vue'),
-      },
-      {
         path: 'profile',
         component: () => import(/* webpackChunkName: "console" */ '@/components/console/Profile.vue'),
       },
