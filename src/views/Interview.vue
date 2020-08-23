@@ -152,7 +152,7 @@
                 </v-col>
                 <v-col cols="12" sm="6">
                   <v-text-field
-                    :value="new Date(interviewInfo.start_time).toLocaleString('zh-cn')"
+                    :value="new Date(interviewInfo.start_time * 1000).toLocaleString('zh-cn')"
                     label="开始时间"
                     readonly
                   ></v-text-field>
@@ -232,7 +232,9 @@
         </div>
       </v-overlay>
       <v-overlay :value="notStartedOverlay" z-index="20" opacity="0.7">
-        <div class="text-h3 font-weight-bold">面试将于 {{new Date(interviewInfo.start_time).toLocaleString('zh-cn')}} 开始，请耐心等待</div>
+        <div class="text-h3 font-weight-bold">
+          面试将于 {{ new Date(interviewInfo.start_time * 1000).toLocaleString("zh-cn") }} 开始，请耐心等待
+        </div>
       </v-overlay>
       <v-overlay :value="finishOverlay" z-index="20" opacity="0.7">
         <div class="text-h3 font-weight-bold">面试已经结束</div>
@@ -438,26 +440,15 @@ int main() {
         comment: '',
       },
       fab: false,
-      // interviewInfo: {
-      //   id: 0,
-      //   hr: 0,
-      //   interviewer: 0,
-      //   interviewee: '',
-      //   // eslint-disable-next-line @typescript-eslint/camelcase
-      //   start_time: 0,
-      //   length: 0,
-      //   status: 'unknown',
-      // },
       interviewInfo: {
-        // TODO
         id: 0,
         hr: 0,
         interviewer: 0,
         interviewee: 'unknown@lucky.com',
         // eslint-disable-next-line @typescript-eslint/camelcase
-        start_time: new Date().getTime(),
-        length: 30,
-        status: 'ended', // TODO
+        start_time: 0, // UTC timestamp
+        length: 30, // minutes
+        status: 'unknown',
       },
       statusMap: {
         upcoming: '未开始',
@@ -692,7 +683,6 @@ int main() {
         return;
       }
       this.messages.push(message);
-      console.log(message);
       this.connection.send({ chat: message });
       axios
         .post(
@@ -793,9 +783,16 @@ int main() {
         return;
       }
       axios
-        .put(`${API_URL}/interview/${this.id}/evaluation`, this.evaluation, {
-          headers: { 'X-Token': this.token },
-        })
+        .put(
+          `${API_URL}/interview/${this.id}/evaluation`,
+          {
+            rate: 5 - this.evaluation.rate, // map 1 2 3 4 5 to 4 3 2 1 0
+            comment: this.evaluation.comment,
+          },
+          {
+            headers: { 'X-Token': this.token },
+          },
+        )
         .then(() => {
           this.scoreDialog = false;
         })
@@ -807,12 +804,12 @@ int main() {
           }
         });
     },
-    submitEvaluationAndFinish() {
-      this.submitEvaluation();
+    setInterviewStatus(status: string) {
+      this.interviewInfo.status = status;
       axios
         .put(
           `${API_URL}/interview/${this.id}/status`,
-          { status: 'ended' },
+          { status },
           {
             headers: { 'X-Token': this.token },
           },
@@ -825,12 +822,17 @@ int main() {
           }
         });
     },
+    submitEvaluationAndFinish() {
+      this.submitEvaluation();
+      this.setInterviewStatus('ended');
+    },
     getInterviewInfo() {
-      axios
+      return axios
         .get(`${API_URL}/interview/${this.id}`, {
           headers: { 'X-Token': this.token },
         })
         .then((response) => {
+          console.log(response.data);
           this.interviewInfo = response.data;
         })
         .catch((error) => {
@@ -980,35 +982,48 @@ int main() {
           this.participants[0].id = roleMap.indexOf('interviewee');
           this.myself.name = '面试官';
           this.myself.id = roleMap.indexOf('interviewer');
-          document.querySelectorAll('.quick-chat-container .container-message-manager').forEach((e) => {
-            (e as HTMLElement).style.display = 'none';
-          });
+          document
+            .querySelectorAll('.quick-chat-container .container-message-manager')
+            .forEach((e) => {
+              (e as HTMLElement).style.display = 'none';
+            });
           document
             .querySelector('.quick-chat-container .message-input')!
             .setAttribute('contenteditable', 'false');
         }
-        this.getInterviewInfo();
-
-        if (this.interviewInfo.status === 'upcoming') {
-          this.notStartedOverlay = true;
-        } else if (this.interviewInfo.status === 'active') {
-          this.resumeInterview();
-          this.initializeInterview();
-        } else if (this.interviewInfo.status === 'ended') {
-          if (this.roleString === 'HR') {
-            this.cmOptions.readOnly = true;
-            this.initializeReplay();
-          } else {
-            this.finishOverlay = true;
+        this.getInterviewInfo().then(() => {
+          // adjust status
+          const currentTime = Math.floor(Date.now() / 1000);
+          console.log('This', this.interviewInfo);
+          console.log(currentTime);
+          if (this.interviewInfo.start_time < currentTime && this.interviewInfo.status === 'upcoming') {
+            if (currentTime < this.interviewInfo.start_time + this.interviewInfo.length * 60) {
+              this.setInterviewStatus('active');
+            } else {
+              this.setInterviewStatus('ended');
+            }
           }
-        }
-      })
-      .catch((error) => {
-        if (error.response && error.response.data.message) {
-          this.setError(error.response.data.message);
-        } else {
-          this.setError(error.message);
-        }
+          if (this.interviewInfo.status === 'upcoming') {
+            this.notStartedOverlay = true;
+          } else if (this.interviewInfo.status === 'active') {
+            this.resumeInterview();
+            this.initializeInterview();
+          } else if (this.interviewInfo.status === 'ended') {
+            if (this.roleString === 'HR') {
+              this.cmOptions.readOnly = true;
+              this.initializeReplay();
+            } else {
+              this.finishOverlay = true;
+            }
+          }
+        })
+          .catch((error) => {
+            if (error.response && error.response.data.message) {
+              this.setError(error.response.data.message);
+            } else {
+              this.setError(error.message);
+            }
+          });
       });
   },
 
@@ -1101,12 +1116,18 @@ int main() {
       const currentTime = this.interviewInfo.start_time + this.replayProgress.current;
       console.log(this.replayData);
 
-      while (this.replayIndex.chat in this.replayData.chat && (this.replayData.chat[this.replayIndex.chat] as any).time < currentTime) {
+      while (
+        this.replayIndex.chat in this.replayData.chat
+        && (this.replayData.chat[this.replayIndex.chat] as any).time < currentTime * 1000
+      ) {
         this.replayIndex.chat += 1;
       }
       this.messages = this.replayData.chat.slice(0, this.replayIndex.chat);
 
-      while (this.replayIndex.whiteboard in this.replayData.whiteboard && (this.replayData.whiteboard[this.replayIndex.whiteboard] as any).time < currentTime) {
+      while (
+        this.replayIndex.whiteboard in this.replayData.whiteboard
+        && (this.replayData.whiteboard[this.replayIndex.whiteboard] as any).time < currentTime * 1000
+      ) {
         this.replayIndex.whiteboard += 1;
       }
       this.replayIndex.whiteboard -= 1;
@@ -1114,7 +1135,10 @@ int main() {
         this.drawing = this.replayData.whiteboard[this.replayIndex.whiteboard];
       }
 
-      while (this.replayIndex.code in this.replayData.code && (this.replayData.code[this.replayIndex.code] as any).time < currentTime) {
+      while (
+        this.replayIndex.code in this.replayData.code
+        && (this.replayData.code[this.replayIndex.code] as any).time < currentTime * 1000
+      ) {
         this.replayIndex.code += 1;
       }
       this.replayIndex.code -= 1;
