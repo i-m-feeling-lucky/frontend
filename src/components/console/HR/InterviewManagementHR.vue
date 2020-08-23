@@ -202,8 +202,8 @@
               <v-row no-gutters>
                 <v-col cols="10" class="mx-auto">
                  <v-select
-                    v-model="selectedInterviewerID"
-                    :items="interviewerIDs"
+                    v-model="selectedInterviewerEmail"
+                    :items="InterviewerEmails"
                     :rules="interviewerRules"
                     label="面试官"
                     prepend-icon="mdi-account-tie"
@@ -352,8 +352,8 @@ export default Vue.extend({
       loadingAdd: false,
       valid: false,
 
-      interviewerIDs: [] as string[],
-      selectedInterviewerID: '',
+      interviewers: [] as any[],
+      selectedInterviewerEmail: '',
       interviewerRules: [
         (interviewer: string) => !!interviewer || '需要选择面试官',
       ],
@@ -400,6 +400,11 @@ export default Vue.extend({
         (interview: any) => interview.status === 'ended',
       ).sort((a: any, b: any) => b.start_time - a.start_time);
     },
+    InterviewerEmails(): any[] {
+      return this.interviewers.map(
+        (interviewer: any) => interviewer.email,
+      );
+    },
   },
   methods: {
     ...mapMutations(['setError', 'setSuccess']),
@@ -414,7 +419,9 @@ export default Vue.extend({
         axios.post(`${API_URL}/interview`,
           {
             hr: this.getUser.id,
-            interviewer: Number(this.selectedInterviewerID),
+            interviewer: this.interviewers.find(
+              (interviewer: any) => interviewer.email === this.selectedInterviewerEmail,
+            ).uid,
             interviewee: this.selectedIntervieweeEmail,
             // eslint-disable-next-line
             start_time: momentStart.unix(),
@@ -464,9 +471,7 @@ export default Vue.extend({
         headers: { 'X-Token': this.getUser.token },
       })
       .then((response) => {
-        this.interviewerIDs = response.data.interviewers.map(
-          (interviewer: number) => interviewer.toString(),
-        );
+        this.interviewers = response.data.interviewers;
         this.intervieweeEmails = response.data.interviewees.map(
           (interviewee: any) => interviewee.email,
         );
