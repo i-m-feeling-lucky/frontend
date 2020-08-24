@@ -54,7 +54,7 @@
                   </v-list-item-action>
                   -->
                 </v-list-item>
-                <v-divider :key="item.token"></v-divider>
+                <v-divider :key="item.start_time"></v-divider>
               </template>
             </v-list>
             <v-card-text class="text-center text--secondary" v-else>
@@ -114,7 +114,7 @@
                   </v-list-item-action>
                   -->
                 </v-list-item>
-                <v-divider :key="item.token"></v-divider>
+                <v-divider :key="item.start_time"></v-divider>
               </template>
             </v-list>
             <v-card-text class="text-center text--secondary" v-else>
@@ -174,7 +174,7 @@
                   </v-list-item-action>
                   -->
                 </v-list-item>
-                <v-divider :key="item.token"></v-divider>
+                <v-divider :key="item.start_time"></v-divider>
               </template>
             </v-list>
             <v-card-text class="text-center text--secondary" v-else>
