@@ -8,7 +8,6 @@
             <gl-component>
               <codemirror v-model="code.data.text" :options="cmOptions" />
             </gl-component>
-            <!-- TODO -->
             <gl-component>
               <v-row class="ml-2 mt-2 mr-0">
                 <v-col>
@@ -40,7 +39,6 @@
                 </v-col>
                 <v-col>
                   <v-btn @click="runCode" :disabled="inReplayMode">运行</v-btn>
-                  <!-- TODO float to right -->
                 </v-col>
               </v-row>
               <v-row class="ml-2 mr-0">
@@ -95,7 +93,6 @@
               </Chat>
             </gl-component>
             <gl-row>
-              <!-- TODO click to switch between three modes -->
               <gl-component>
                 <div id="video-container-interviewer" class="video-container"></div>
               </gl-component>
@@ -460,7 +457,7 @@ int main() {
       finishOverlay: false,
       replayProgress: {
         current: 0,
-        total: 45 * 60, // TODO
+        total: 30 * 60,
       },
       progressTimeoutID: 0,
       isCtrlPressed: false,
@@ -468,12 +465,6 @@ int main() {
         chat: [],
         whiteboard: [],
         code: [],
-      },
-      // Use which value in replayData
-      replayIndex: {
-        chat: 0,
-        whiteboard: 0,
-        code: 0,
       },
     };
   },
@@ -487,7 +478,7 @@ int main() {
     },
   },
   methods: {
-    ...mapMutations(['setError', 'setInfo']),
+    ...mapMutations(['setError', 'setInfo', 'setSuccess']),
     resumeInterview() {
       // Restore chat, drawingboard and code history
       axios
@@ -495,7 +486,6 @@ int main() {
           headers: { 'X-Token': this.token },
         })
         .then((response) => {
-          console.log(response.data);
           this.messages = response.data.map((m: any) => ({
             ...m.data,
             myself:
@@ -508,7 +498,6 @@ int main() {
           }));
         })
         .catch((error) => {
-          console.log('Resume error');
           if (error.response && error.response.data.message) {
             this.setError(error.response.data.message);
           } else {
@@ -719,7 +708,6 @@ int main() {
         this.setError('连接已断开，信息无法发送！请在新打开的窗口中执行操作！');
         return;
       }
-      // TODO use img.yusanshi.com/upload.php
       toBase64(file)
         .then((base64) => {
           message.src = base64;
@@ -780,37 +768,45 @@ int main() {
         });
     },
     submitEvaluation() {
-      if (this.evaluation.rate === 0) {
-        this.setError('评级不能为零！');
-        return;
-      }
-      if (this.evaluation.comment === '') {
-        this.setError('评语不能为空！');
-        return;
-      }
-      axios
-        .put(
-          `${API_URL}/interview/${this.id}/evaluation`,
-          {
-            rate: 5 - this.evaluation.rate, // map 1 2 3 4 5 to 4 3 2 1 0
-            comment: this.evaluation.comment,
-          },
-          {
-            headers: { 'X-Token': this.token },
-          },
-        )
-        .then(() => {
-          this.scoreDialog = false;
-        })
-        .catch((error) => {
-          if (error.response && error.response.data.message) {
-            this.setError(error.response.data.message);
-          } else {
-            this.setError(error.message);
-          }
-        });
+      return new Promise((resolve, reject) => {
+        if (this.evaluation.rate === 0) {
+          this.setError('评级不能为零！');
+          reject();
+          return;
+        }
+        if (this.evaluation.comment === '') {
+          this.setError('评语不能为空！');
+          reject();
+          return;
+        }
+        axios
+          .put(
+            `${API_URL}/interview/${this.id}/evaluation`,
+            {
+              rate: 5 - this.evaluation.rate, // map 1 2 3 4 5 to 4 3 2 1 0
+              comment: this.evaluation.comment,
+            },
+            {
+              headers: { 'X-Token': this.token },
+            },
+          )
+          .then(() => {
+            this.scoreDialog = false;
+            this.setSuccess('提交评价成功');
+            resolve();
+          })
+          .catch((error) => {
+            if (error.response && error.response.data.message) {
+              this.setError(error.response.data.message);
+            } else {
+              this.setError(error.message);
+            }
+            reject();
+          });
+      });
     },
     setInterviewStatus(status: string) {
+      // TODO return a Promise
       this.interviewInfo.status = status;
       axios
         .put(
@@ -829,8 +825,10 @@ int main() {
         });
     },
     submitEvaluationAndFinish() {
-      this.submitEvaluation();
-      this.setInterviewStatus('ended');
+      this.submitEvaluation().then(() => {
+        this.setInterviewStatus('ended');
+        this.setSuccess('面试已结束');
+      });
     },
     getInterviewInfo() {
       return axios
@@ -857,6 +855,7 @@ int main() {
     },
     initializeReplay() {
       this.setInfo('你是 HR，正在观看回放中');
+      this.replayProgress.total = this.interviewInfo.length * 60;
       window.addEventListener('keydown', (e) => {
         if (e.code === 'ControlLeft' || e.code === 'ControlRight') {
           this.isCtrlPressed = true;
@@ -894,9 +893,9 @@ int main() {
       window.setInterval(() => {
         this.replayProgress.current = Math.min(
           this.replayProgress.total,
-          this.replayProgress.current + 1,
+          this.replayProgress.current + 0.5,
         );
-      }, 1000);
+      }, 500);
 
       axios
         .get(`${API_URL}/interview/${this.id}/history/chat?scope=all`, {
@@ -977,15 +976,15 @@ int main() {
         if (this.roleString === 'interviewee') {
           this.participants[0].name = '面试官';
           this.participants[0].id = roleMap.indexOf('interviewer');
-          this.myself.name = '候选人'; // TODO real name
+          this.myself.name = '候选人';
           this.myself.id = roleMap.indexOf('interviewee');
         } else if (this.roleString === 'interviewer') {
-          this.participants[0].name = '候选人'; // TODO real name
+          this.participants[0].name = '候选人';
           this.participants[0].id = roleMap.indexOf('interviewee');
           this.myself.name = '面试官';
           this.myself.id = roleMap.indexOf('interviewer');
         } else if (this.roleString === 'HR') {
-          this.participants[0].name = '候选人'; // TODO real name
+          this.participants[0].name = '候选人';
           this.participants[0].id = roleMap.indexOf('interviewee');
           this.myself.name = '面试官';
           this.myself.id = roleMap.indexOf('interviewer');
@@ -1013,7 +1012,7 @@ int main() {
         if (this.interviewInfo.status === 'upcoming') {
           this.notStartedOverlay = true;
         } else if (this.interviewInfo.status === 'active') {
-          this.resumeInterview(); // TODO
+          this.resumeInterview();
           this.initializeInterview();
         } else if (this.interviewInfo.status === 'ended') {
           if (this.roleString === 'HR') {
@@ -1118,36 +1117,38 @@ int main() {
     },
     'replayProgress.current': function () {
       const currentTime = this.interviewInfo.start_time + this.replayProgress.current;
-      console.log(this.replayData);
+      const replayIndex = {
+        chat: -1,
+        whiteboard: -1,
+        code: -1,
+      };
+      while (
+        replayIndex.chat + 1 in this.replayData.chat
+        && (this.replayData.chat[replayIndex.chat + 1] as any).time < currentTime * 1000
+      ) {
+        replayIndex.chat += 1;
+      }
+      this.messages = this.replayData.chat.slice(0, replayIndex.chat + 1);
 
       while (
-        this.replayIndex.chat in this.replayData.chat
-        && (this.replayData.chat[this.replayIndex.chat] as any).time < currentTime * 1000
+        replayIndex.whiteboard + 1 in this.replayData.whiteboard
+        && (this.replayData.whiteboard[replayIndex.whiteboard + 1] as any).time < currentTime * 1000
       ) {
-        this.replayIndex.chat += 1;
+        replayIndex.whiteboard += 1;
       }
-      this.messages = this.replayData.chat.slice(0, this.replayIndex.chat);
 
-      while (
-        this.replayIndex.whiteboard in this.replayData.whiteboard
-        && (this.replayData.whiteboard[this.replayIndex.whiteboard] as any).time < currentTime * 1000
-      ) {
-        this.replayIndex.whiteboard += 1;
-      }
-      this.replayIndex.whiteboard -= 1;
-      if (this.replayIndex.whiteboard in this.replayData.whiteboard) {
-        this.drawing = this.replayData.whiteboard[this.replayIndex.whiteboard];
+      if (replayIndex.whiteboard in this.replayData.whiteboard) {
+        this.drawing = this.replayData.whiteboard[replayIndex.whiteboard];
       }
 
       while (
-        this.replayIndex.code in this.replayData.code
-        && (this.replayData.code[this.replayIndex.code] as any).time < currentTime * 1000
+        replayIndex.code + 1 in this.replayData.code
+        && (this.replayData.code[replayIndex.code + 1] as any).time < currentTime * 1000
       ) {
-        this.replayIndex.code += 1;
+        replayIndex.code += 1;
       }
-      this.replayIndex.code -= 1;
-      if (this.replayIndex.code in this.replayData.code) {
-        this.code = this.replayData.code[this.replayIndex.code];
+      if (replayIndex.code in this.replayData.code) {
+        this.code = this.replayData.code[replayIndex.code];
       }
     },
   },
