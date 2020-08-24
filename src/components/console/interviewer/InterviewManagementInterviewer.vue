@@ -1,4 +1,5 @@
 <template>
+ <!-- eslint-disable max-len -->
   <v-row no-gutters>
     <v-col class="mx-auto" sm="8" md="5">
       <v-expansion-panels popout multiple v-model="panel">
