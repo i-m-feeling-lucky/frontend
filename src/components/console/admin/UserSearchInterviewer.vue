@@ -1,7 +1,7 @@
 <template>
   <v-row no-gutters>
     <v-col class="mx-auto" cols="12" sm="7" md="8">
-      <v-card>
+      <v-card style="padding:5%">
         <v-card-title>面试官</v-card-title>
         <v-text-field
           v-model="search"
@@ -68,38 +68,6 @@ export default Vue.extend({
         } else {
           this.setError('Error: 生成请求时发生异常');
         }
-        // TODO: 因为后端还没实现，所以在这里临时使用一些自己编的数据
-        const data = [
-          {
-            id: 1,
-            email: 'hr1@lucky.com',
-            role: 1,
-          },
-          {
-            id: 2,
-            email: 'hr2@lucky.com',
-            role: 1,
-          },
-          {
-            id: 3,
-            email: 'interviewer3@lucky.com',
-            role: 2,
-          },
-          {
-            id: 4,
-            email: 'interviewer4@lucky.com',
-            role: 2,
-          },
-          {
-            id: 5,
-            email: 'interviewer5@lucky.com',
-            role: 2,
-          },
-        ];
-        this.interviewers = data.filter(
-          (user: any) => user.role === 2,
-        );
-        console.log(this.interviewers);
       });
   },
 });

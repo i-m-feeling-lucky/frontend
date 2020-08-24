@@ -155,15 +155,15 @@ export default Vue.extend({
       loadingAdd: false,
       valid: false,
 
-      HRIDs1: [] as string[],
+      HRIDs1: [] as number[],
       selectedHRID1: '',
-      HRIDs2: [] as string[],
+      HRIDs2: [] as number[],
       selectedHRID2: '',
       HRRules: [
         (HR: string) => !!HR || '需要选择HR',
       ],
 
-      interviewerIDs: [] as string[],
+      interviewerIDs: [] as number[],
       selectedInterviewerID: '',
       interviewerRules: [
         (interviewer: string) => !!interviewer || '需要选择面试官',
@@ -281,55 +281,24 @@ export default Vue.extend({
         headers: { 'X-Token': this.getUser.token },
       })
       .then((response) => {
-        this.HRIDs1 = [response.data.filter(
+        this.HRIDs1 = response.data.filter(
           (user: any) => user.role === 1,
-        )].map((user: any) => user.id.toString());
-        this.HRIDs2 = [response.data.filter(
+        ).map((user: any) => user.id);
+        this.HRIDs2 = response.data.filter(
           (user: any) => user.role === 1,
-        )].map((user: any) => user.id.toString());
-        this.interviewerIDs = [response.data.filter(
+        ).map((user: any) => user.id);
+        this.interviewerIDs = response.data.filter(
           (user: any) => user.role === 2,
-        )].map((user: any) => user.id.toString());
+        ).map((user: any) => user.id);
       }).catch((error) => {
         if (error.response) {
           this.setError(`Error: ${error.response.status.toString()} ${error.response.statusText}`);
         } else if (error.request) {
           this.setError('Error: 服务器无响应');
         } else {
+          console.log(error);
           this.setError('Error: 生成请求时发生异常');
         }
-        // TODO: 因为后端还没实现，所以在这里临时使用一些自己编的数据
-        const data = [
-          {
-            id: 1,
-            role: 1,
-          },
-          {
-            id: 2,
-            role: 1,
-          },
-          {
-            id: 3,
-            role: 2,
-          },
-          {
-            id: 4,
-            role: 2,
-          },
-          {
-            id: 5,
-            role: 2,
-          },
-        ];
-        this.HRIDs1 = data.filter(
-          (user) => user.role === 1,
-        ).map((user: any) => user.id.toString());
-        this.HRIDs2 = data.filter(
-          (user) => user.role === 1,
-        ).map((user: any) => user.id.toString());
-        this.interviewerIDs = data.filter(
-          (user) => user.role === 2,
-        ).map((user: any) => user.id.toString());
       });
     axios.get(`${API_URL}/interviewee`,
       {
@@ -337,7 +306,7 @@ export default Vue.extend({
       })
       .then((response) => {
         this.intervieweeEmails = response.data.map(
-          (email: string) => email.toString(),
+          (interviewee: any) => interviewee.email,
         );
       }).catch((error) => {
         if (error.response) {
@@ -347,26 +316,6 @@ export default Vue.extend({
         } else {
           this.setError('Error: 生成请求时发生异常');
         }
-        // TODO: 因为后端还没实现，所以在这里临时使用一些自己编的数据
-        const data = {
-          interviewees: [
-            {
-              email: 'jackweller@gmail.com',
-            },
-            {
-              email: 'yusanshi@163.com',
-            },
-            {
-              email: 'anothertest@gmail.com',
-            },
-            {
-              email: 'fortest@126.com',
-            },
-          ],
-        };
-        this.intervieweeEmails = data.interviewees.map(
-          (interviewee: any) => interviewee.email,
-        );
       });
   },
 });

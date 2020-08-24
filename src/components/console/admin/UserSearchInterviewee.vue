@@ -1,7 +1,7 @@
 <template>
   <v-row no-gutters>
     <v-col class="mx-auto" cols="12" sm="7" md="8">
-      <v-card>
+      <v-card style="padding:5%">
         <v-card-title>候选人</v-card-title>
         <v-text-field
           v-model="search"
@@ -67,35 +67,6 @@ export default Vue.extend({
         } else {
           this.setError('Error: 生成请求时发生异常');
         }
-        // TODO: 因为后端还没实现，所以在这里临时使用一些自己编的数据
-        const data = [
-          {
-            email: 'jackweller@gmail.com',
-            name: 'Jack Weller',
-            // eslint-disable-next-line
-            application_result: 0,
-          },
-          {
-            email: 'yusanshi@163.com',
-            name: 'Yu Sanshi',
-            // eslint-disable-next-line
-            application_result: 1,
-          },
-          {
-            email: 'anothertest@gmail.com',
-            name: 'another test',
-            // eslint-disable-next-line
-            application_result: 1,
-          },
-          {
-            email: 'fortest@126.com',
-            name: 'for test',
-            // eslint-disable-next-line
-            application_result: 0,
-          },
-        ];
-        this.interviewees = data;
-        console.log(this.interviewees);
       });
   },
 });
