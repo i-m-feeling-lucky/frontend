@@ -87,7 +87,7 @@ export default Vue.extend({
     onAddNewInterviewer() {
       if ((this.$refs.form as any).validate()) {
         this.loadingAdd = true;
-        axios.post(`${API_URL}/HR`,
+        axios.post(`${API_URL}/user`,
           [
             {
               email: this.email,

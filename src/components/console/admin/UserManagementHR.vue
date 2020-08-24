@@ -196,7 +196,7 @@ export default Vue.extend({
     onAssignNewHRInterviewee() {
       if ((this.$refs.form1 as any).validate()) {
         this.loadingAdd = true;
-        axios.post(`${API_URL}/assign/interviewee`,
+        axios.post(`${API_URL}/user/assign/interviewee`,
           {
             hr: Number(this.selectedHRID1),
             interviewee: this.selectedIntervieweeEmail,
@@ -222,7 +222,7 @@ export default Vue.extend({
     onAssignNewHRInterviewer() {
       if ((this.$refs.form2 as any).validate()) {
         this.loadingAdd = true;
-        axios.post(`${API_URL}/assign/interviewer`,
+        axios.post(`${API_URL}/user/assign/interviewer`,
           {
             hr: Number(this.selectedHRID2),
             interviewer: Number(this.selectedInterviewerID),
