@@ -99,17 +99,17 @@ export default Vue.extend({
             model: false,
             children: [
               {
-                icon: 'mdi-duck',
+                icon: 'mdi-account-tie',
                 text: 'HR',
                 to: '/console/user-management/HR',
               },
               {
-                icon: 'mdi-duck',
+                icon: 'mdi-account-tie',
                 text: '面试官',
                 to: '/console/user-management/interviewer',
               },
               {
-                icon: 'mdi-duck',
+                icon: 'mdi-account-tie',
                 text: '候选人',
                 to: '/console/user-management/interviewee',
               },
@@ -121,17 +121,17 @@ export default Vue.extend({
             model: false,
             children: [
               {
-                icon: 'mdi-duck',
+                icon: 'mdi-account-tie',
                 text: 'HR',
                 to: '/console/user-search/HR',
               },
               {
-                icon: 'mdi-duck',
+                icon: 'mdi-account-tie',
                 text: '面试官',
                 to: '/console/user-search/interviewer',
               },
               {
-                icon: 'mdi-duck',
+                icon: 'mdi-account-tie',
                 text: '候选人',
                 to: '/console/user-search/interviewee',
               },
