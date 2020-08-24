@@ -271,7 +271,6 @@ export default Vue.extend({
         ).map((interview: any) => ({
           interviewee: interview.interviewee,
           interviewer: interview.interviewer,
-          token: interview.token,
           // eslint-disable-next-line
           start_time: moment.unix(interview.start_time).format('M月D日 kk:mm'),
           length: interview.length,
