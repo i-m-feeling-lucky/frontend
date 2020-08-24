@@ -16,8 +16,8 @@
               <v-row no-gutters>
                 <v-col cols="10" class="mx-auto">
                  <v-select
-                    v-model="selectedHRID1"
-                    :items="HRIDs1"
+                    v-model="selectedHREmail1"
+                    :items="HREmails1"
                     :rules="HRRules"
                     label="HR"
                     prepend-icon="mdi-account-tie"
@@ -61,8 +61,8 @@
               <v-row no-gutters>
                 <v-col cols="10" class="mx-auto">
                  <v-select
-                    v-model="selectedHRID2"
-                    :items="HRIDs2"
+                    v-model="selectedHREmail2"
+                    :items="HREmails2"
                     :rules="HRRules"
                     label="HR"
                     prepend-icon="mdi-account-tie"
@@ -70,8 +70,8 @@
                 </v-col>
                 <v-col cols="10" class="mx-auto">
                  <v-select
-                    v-model="selectedInterviewerID"
-                    :items="interviewerIDs"
+                    v-model="selectedInterviewerEmail"
+                    :items="interviewerEmails"
                     :rules="interviewerRules"
                     label="面试官"
                     prepend-icon="mdi-account-tie"
@@ -155,16 +155,18 @@ export default Vue.extend({
       loadingAdd: false,
       valid: false,
 
-      HRIDs1: [] as number[],
-      selectedHRID1: '',
-      HRIDs2: [] as number[],
-      selectedHRID2: '',
+      HRs: [] as any[],
+      HREmails1: [] as string[],
+      selectedHREmail1: '',
+      HREmails2: [] as string[],
+      selectedHREmail2: '',
       HRRules: [
         (HR: string) => !!HR || '需要选择HR',
       ],
 
-      interviewerIDs: [] as number[],
-      selectedInterviewerID: '',
+      interviewers: [] as any[],
+      interviewerEmails: [] as string[],
+      selectedInterviewerEmail: '',
       interviewerRules: [
         (interviewer: string) => !!interviewer || '需要选择面试官',
       ],
@@ -198,7 +200,9 @@ export default Vue.extend({
         this.loadingAdd = true;
         axios.post(`${API_URL}/user/assign/interviewee`,
           {
-            hr: Number(this.selectedHRID1),
+            hr: this.HRs.find(
+              (hr: any) => hr.email === this.selectedHREmail1,
+            ).id,
             interviewee: this.selectedIntervieweeEmail,
           },
           {
@@ -224,8 +228,12 @@ export default Vue.extend({
         this.loadingAdd = true;
         axios.post(`${API_URL}/user/assign/interviewer`,
           {
-            hr: Number(this.selectedHRID2),
-            interviewer: Number(this.selectedInterviewerID),
+            hr: this.HRs.find(
+              (hr: any) => hr.email === this.selectedHREmail2,
+            ).id,
+            interviewer: this.interviewers.find(
+              (interviewer: any) => interviewer.email === this.selectedInterviewerEmail,
+            ).id,
           },
           {
             headers: { 'X-Token': this.getUser.token },
@@ -281,15 +289,21 @@ export default Vue.extend({
         headers: { 'X-Token': this.getUser.token },
       })
       .then((response) => {
-        this.HRIDs1 = response.data.filter(
+        this.HRs = response.data.filter(
           (user: any) => user.role === 1,
-        ).map((user: any) => user.id);
-        this.HRIDs2 = response.data.filter(
+        );
+        this.HREmails1 = response.data.filter(
           (user: any) => user.role === 1,
-        ).map((user: any) => user.id);
-        this.interviewerIDs = response.data.filter(
+        ).map((user: any) => user.email);
+        this.HREmails2 = response.data.filter(
+          (user: any) => user.role === 1,
+        ).map((user: any) => user.email);
+        this.interviewers = response.data.filter(
           (user: any) => user.role === 2,
-        ).map((user: any) => user.id);
+        );
+        this.interviewerEmails = response.data.filter(
+          (user: any) => user.role === 2,
+        ).map((user: any) => user.email);
       }).catch((error) => {
         if (error.response) {
           this.setError(`Error: ${error.response.status.toString()} ${error.response.statusText}`);
