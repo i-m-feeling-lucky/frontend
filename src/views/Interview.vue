@@ -495,13 +495,20 @@ int main() {
           headers: { 'X-Token': this.token },
         })
         .then((response) => {
+          console.log(response.data);
           this.messages = response.data.map((m: any) => ({
             ...m.data,
-            time: m.time, // for quicker search in replay
+            myself:
+                // If current user is HR, display interviewer's message on the right
+                // by setting `myself` true
+                this.roleString === 'HR'
+                  ? roleMap[m.data.participantId] === 'interviewer'
+                  : m.data.participantId === this.role,
             timestamp: new Date(m.time).toISOString(),
           }));
         })
         .catch((error) => {
+          console.log('Resume error');
           if (error.response && error.response.data.message) {
             this.setError(error.response.data.message);
           } else {
@@ -570,18 +577,16 @@ int main() {
                 // by setting `myself` true
                 this.roleString === 'HR'
                   ? roleMap[event.data.chat.participantId] === 'interviewer'
-                  : event.data.chat.participantId === this.role,
+                  : false,
             }),
           );
         } else if (event.data.code) {
           if (event.data.code.time > this.code.time) {
-            console.log('Received new code.');
             this.codeStopWatch = true;
             this.code = event.data.code;
           }
         } else if (event.data.drawing) {
           if (event.data.drawing.time > this.drawing.time) {
-            console.log('Received new drawing.');
             this.drawingStopWatch = true;
             this.drawing = event.data.drawing;
           }
@@ -688,7 +693,8 @@ int main() {
         .post(
           `${API_URL}/interview/${this.id}/history/chat`,
           // Use time in server
-          { ...message, timestamp: 0 },
+          // TODO why myself got lost here?
+          { ...message, uploaded: true, timestamp: 0 },
           {
             headers: { 'X-Token': this.token },
           },
@@ -723,7 +729,7 @@ int main() {
             .post(
               `${API_URL}/interview/${this.id}/history/chat`,
               // Use time in server
-              { ...message, timestamp: 0 },
+              { ...message, uploaded: true, timestamp: 0 },
               {
                 headers: { 'X-Token': this.token },
               },
@@ -832,7 +838,6 @@ int main() {
           headers: { 'X-Token': this.token },
         })
         .then((response) => {
-          console.log(response.data);
           this.interviewInfo = response.data;
         })
         .catch((error) => {
@@ -900,6 +905,8 @@ int main() {
         .then((response) => {
           this.replayData.chat = response.data.map((m: any) => ({
             ...m.data,
+            myself: roleMap[m.data.participantId] === 'interviewer',
+            time: m.time, // for quicker search in replay
             timestamp: new Date(m.time).toISOString(),
           }));
         })
@@ -991,39 +998,38 @@ int main() {
             .querySelector('.quick-chat-container .message-input')!
             .setAttribute('contenteditable', 'false');
         }
-        this.getInterviewInfo().then(() => {
-          // adjust status
-          const currentTime = Math.floor(Date.now() / 1000);
-          console.log('This', this.interviewInfo);
-          console.log(currentTime);
-          if (this.interviewInfo.start_time < currentTime && this.interviewInfo.status === 'upcoming') {
-            if (currentTime < this.interviewInfo.start_time + this.interviewInfo.length * 60) {
-              this.setInterviewStatus('active');
-            } else {
-              this.setInterviewStatus('ended');
-            }
+        return this.getInterviewInfo();
+      })
+      .then(() => {
+        // adjust status
+        const currentTime = Math.floor(Date.now() / 1000);
+        if (this.interviewInfo.start_time < currentTime && this.interviewInfo.status === 'upcoming') {
+          if (currentTime < this.interviewInfo.start_time + this.interviewInfo.length * 60) {
+            this.setInterviewStatus('active');
+          } else {
+            this.setInterviewStatus('ended');
           }
-          if (this.interviewInfo.status === 'upcoming') {
-            this.notStartedOverlay = true;
-          } else if (this.interviewInfo.status === 'active') {
-            this.resumeInterview();
-            this.initializeInterview();
-          } else if (this.interviewInfo.status === 'ended') {
-            if (this.roleString === 'HR') {
-              this.cmOptions.readOnly = true;
-              this.initializeReplay();
-            } else {
-              this.finishOverlay = true;
-            }
+        }
+        if (this.interviewInfo.status === 'upcoming') {
+          this.notStartedOverlay = true;
+        } else if (this.interviewInfo.status === 'active') {
+          this.resumeInterview(); // TODO
+          this.initializeInterview();
+        } else if (this.interviewInfo.status === 'ended') {
+          if (this.roleString === 'HR') {
+            this.cmOptions.readOnly = true;
+            this.initializeReplay();
+          } else {
+            this.finishOverlay = true;
           }
-        })
-          .catch((error) => {
-            if (error.response && error.response.data.message) {
-              this.setError(error.response.data.message);
-            } else {
-              this.setError(error.message);
-            }
-          });
+        }
+      })
+      .catch((error) => {
+        if (error.response && error.response.data.message) {
+          this.setError(error.response.data.message);
+        } else {
+          this.setError(error.message);
+        }
       });
   },
 
@@ -1043,7 +1049,6 @@ int main() {
           return;
         }
         if (!this.codeStopWatch) {
-          console.log('I changed the code. Send...');
           this.code.time = Date.now();
           this.connection.send({ code: this.code });
           axios
@@ -1089,12 +1094,11 @@ int main() {
         return;
       }
       if (!this.drawingStopWatch) {
-        console.log('I changed the drawing. Send...');
         this.drawing.time = Date.now();
         this.connection.send({ drawing: this.drawing });
         axios
           .post(
-            `${API_URL}/interview/${this.id}/history/drawing`,
+            `${API_URL}/interview/${this.id}/history/whiteboard`,
             // Use time in server
             this.drawing.data,
             {
