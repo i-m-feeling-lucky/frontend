@@ -137,7 +137,7 @@ export default new Vuex.Store({
           {
             headers: { 'X-Token': getters.getUser.token },
           })
-          .then((response) => response.status)
+          .then(() => { resolve(); })
           .catch((error) => {
             if (error.response) {
               // The request was made and the server responded with a status code
