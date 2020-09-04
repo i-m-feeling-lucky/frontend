@@ -20,7 +20,6 @@ export default new Vuex.Store({
         expiresAt: null,
       },
     fullScreen: false,
-    freeTimeArray: [],
     info: '',
     success: '',
     error: '',
@@ -38,9 +37,6 @@ export default new Vuex.Store({
     getFullScreen(state) {
       return state.fullScreen;
     },
-    getFreeTimeArray(state) {
-      return state.freeTimeArray;
-    },
     getInfo(state) {
       return state.info;
     },
@@ -57,9 +53,6 @@ export default new Vuex.Store({
     },
     setFullScreen(state, payload) {
       state.fullScreen = payload;
-    },
-    setFreeTimeArray(state, payload) {
-      state.freeTimeArray = payload;
     },
     setInfo(state, payload) {
       state.info = payload;
@@ -150,48 +143,6 @@ export default new Vuex.Store({
               reject(new Error('服务器无响应'));
             } else {
               // Something happened in setting up the request that triggered an Error
-              reject(new Error('生成请求时发生异常'));
-            }
-          });
-      });
-    },
-    getFreeTime({ commit, getters }) {
-      return new Promise((resolve, reject) => {
-        axios.get(`${API_URL}/user/${getters.getUser.id}/free_time`,
-          {
-            headers: { 'X-Token': getters.getUser.token },
-          })
-          .then((response) => {
-            commit('setFreeTimeArray', JSON.parse(response.data.free_time));
-            resolve();
-          }).catch((error) => {
-            if (error.response) {
-              reject(new Error(`${error.response.status.toString()} ${error.response.statusText}`));
-            } else if (error.request) {
-              reject(new Error('服务器无响应'));
-            } else {
-              reject(new Error('生成请求时发生异常'));
-            }
-          });
-      });
-    },
-    changeFreeTime({ getters }, payload) {
-      return new Promise((resolve, reject) => {
-        axios.put(`${API_URL}/user/${getters.getUser.id}/free_time`,
-          {
-            // eslint-disable-next-line
-            free_time: payload,
-          },
-          {
-            headers: { 'X-Token': getters.getUser.token },
-          })
-          .then((response) => response.status)
-          .catch((error) => {
-            if (error.response) {
-              reject(new Error(`${error.response.status.toString()} ${error.response.statusText}`));
-            } else if (error.request) {
-              reject(new Error('服务器无响应'));
-            } else {
               reject(new Error('生成请求时发生异常'));
             }
           });

@@ -203,8 +203,11 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { mapGetters, mapMutations, mapActions } from 'vuex';
+import { mapMutations, mapGetters } from 'vuex';
 import moment from 'moment';
+import axios from 'axios';
+
+const API_URL = process.env.VUE_APP_API_URL;
 
 export default Vue.extend({
   name: 'ManageFreeTime',
@@ -213,7 +216,8 @@ export default Vue.extend({
   },
   data() {
     return {
-      init: false,
+      freeTimeArray: [] as any[],
+      init: false, // 是否已经经过初始化
       focus: '',
       type: 'month',
       typeToLabel: {
@@ -242,7 +246,7 @@ export default Vue.extend({
     };
   },
   computed: {
-    ...mapGetters(['getFreeTimeArray']),
+    ...mapGetters(['getUser']),
     newEndTimeRules() {
       const newEndTimeRules: any = [(endTime: string) => !!endTime || '需要选择结束时间'];
       if (this.newStartTime !== '') {
@@ -259,32 +263,43 @@ export default Vue.extend({
     },
   },
   methods: {
-    ...mapMutations(['setError', 'setSuccess', 'setFreeTimeArray']),
-    ...mapActions(['getFreeTime', 'changeFreeTime']),
+    ...mapMutations(['setError', 'setSuccess']),
     deleteEvent() {
-      // 复制一份Vuex的freeTimeArray，从副本中找到与selectedEvent吻合的事件，删除它，然后向后端发送修改后的空闲时间表
-      // 如果后端修改成功，那么提示修改成功。用此副本来更新Vuex的freeTimeArray。用更新后的freeTimeArray重新计算本组件的data的events
+      // 复制一份freeTimeArray，从副本中找到与selectedEvent吻合的事件，删除它，然后向后端发送修改后的空闲时间表
+      // 如果后端修改成功，那么提示修改成功。用此副本来更新freeTimeArray。用更新后的freeTimeArray重新计算本组件的data的events
       // 如果后端修改失败，那么提示修改失败。
       this.loadingDelete = true;
       const deleteStart = moment((this.selectedEvent as any).start).format().slice(0, 19);
       const temp: string[][] = [];
 
-      for (let i = 0; i < this.getFreeTimeArray.length; i += 1) {
-        if (this.getFreeTimeArray[i][0].slice(0, 19) !== deleteStart) {
-          temp.push(this.getFreeTimeArray[i]);
+      for (let i = 0; i < this.freeTimeArray.length; i += 1) {
+        if (this.freeTimeArray[i][0].slice(0, 19) !== deleteStart) {
+          temp.push(this.freeTimeArray[i]);
         }
       }
-
-      this.changeFreeTime(JSON.stringify(temp))
-        .then(() => {
-          this.setSuccess('删除空闲时间成功');
-          this.setFreeTimeArray(temp);
-          this.events = this.pickEvents(this.getFreeTimeArray);
+      axios.put(`${API_URL}/user/${this.getUser.id}/free_time`,
+        {
+          // eslint-disable-next-line
+          free_time: JSON.stringify(temp),
+        },
+        {
+          headers: { 'X-Token': this.getUser.token },
+        })
+        .then((response) => {
+          this.setSuccess('删除成功');
+          this.freeTimeArray = temp;
+          this.events = this.pickEvents(this.freeTimeArray);
           this.loadingDelete = false;
           this.selectedOpen = false;
         })
         .catch((error) => {
-          this.setError(error);
+          if (error.response) {
+            this.setError(`${error.response.status.toString()} ${error.response.statusText}`);
+          } else if (error.request) {
+            this.setError('服务器无响应');
+          } else {
+            this.setError('为删除空闲时间而生成changeFreeTime请求时发生异常');
+          }
           this.loadingDelete = false;
           this.selectedOpen = false;
         });
@@ -340,44 +355,69 @@ export default Vue.extend({
       this.rangeStartDate = obj.start.date;
       this.rangeEndDate = obj.end.date;
       if (this.init) {
-        this.events = this.pickEvents(this.getFreeTimeArray);
+        this.events = this.pickEvents(this.freeTimeArray);
       } else {
-        this.getFreeTime()
-          .catch((error) => {
-            this.setError(error);
-            this.events = this.pickEvents(this.getFreeTimeArray);
+        axios.get(`${API_URL}/user/${this.getUser.id}/free_time`,
+          {
+            headers: { 'X-Token': this.getUser.token },
+          })
+          .then((response) => {
+            this.freeTimeArray = JSON.parse(response.data.free_time);
+            this.events = this.pickEvents(this.freeTimeArray);
             this.init = true;
+          })
+          .catch((error) => {
+            if (error.response) {
+              this.setError(`${error.response.status.toString()} ${error.response.statusText}`);
+            } else if (error.request) {
+              this.setError('服务器无响应');
+            } else {
+              this.setError('生成getFreeTime请求时发生异常');
+            }
           });
       }
     },
     onAddNewFreeTime() {
       if ((this.$refs.form as any).validate()) {
         this.loadingAdd = true;
-        for (let i = 0; i < this.getFreeTimeArray.length; i += 1) {
-          if (this.date === this.getFreeTimeArray[i][0].slice(0, 10)
-            && (moment(this.newFreeTimeStart).isBetween(this.getFreeTimeArray[i][0], this.getFreeTimeArray[i][1], 'second', '[]')
-            || moment(this.newFreeTimeEnd).isBetween(this.getFreeTimeArray[i][0], this.getFreeTimeArray[i][1], 'second', '[]')
-            || (moment(this.newFreeTimeStart).isBefore(this.getFreeTimeArray[i][0], 'second')
-            && moment(this.newFreeTimeEnd).isAfter(this.getFreeTimeArray[i][1], 'second')))) {
+        for (let i = 0; i < this.freeTimeArray.length; i += 1) {
+          if (this.date === this.freeTimeArray[i][0].slice(0, 10)
+            && (moment(this.newFreeTimeStart).isBetween(this.freeTimeArray[i][0], this.freeTimeArray[i][1], 'second', '[]')
+            || moment(this.newFreeTimeEnd).isBetween(this.freeTimeArray[i][0], this.freeTimeArray[i][1], 'second', '[]')
+            || (moment(this.newFreeTimeStart).isBefore(this.freeTimeArray[i][0], 'second')
+            && moment(this.newFreeTimeEnd).isAfter(this.freeTimeArray[i][1], 'second')))) {
             this.setError('与已存在的空闲时间有重叠！');
             this.loadingAdd = false;
             return;
           }
         }
         const temp: string[][] = [];
-        for (let i = 0; i < this.getFreeTimeArray.length; i += 1) {
-          temp.push(this.getFreeTimeArray[i]);
+        for (let i = 0; i < this.freeTimeArray.length; i += 1) {
+          temp.push(this.freeTimeArray[i]);
         }
         temp.push([this.newFreeTimeStart, this.newFreeTimeEnd]);
-        this.changeFreeTime(JSON.stringify(temp))
-          .then(() => {
-            this.setSuccess('添加空闲时间成功');
-            this.setFreeTimeArray(temp);
-            this.events = this.pickEvents(this.getFreeTimeArray);
+        axios.put(`${API_URL}/user/${this.getUser.id}/free_time`,
+          {
+            // eslint-disable-next-line
+            free_time: JSON.stringify(temp),
+          },
+          {
+            headers: { 'X-Token': this.getUser.token },
+          })
+          .then((response) => {
+            this.setSuccess('添加成功');
+            this.freeTimeArray = temp;
+            this.events = this.pickEvents(this.freeTimeArray);
             this.loadingAdd = false;
           })
           .catch((error) => {
-            this.setError(error);
+            if (error.response) {
+              this.setError(`${error.response.status.toString()} ${error.response.statusText}`);
+            } else if (error.request) {
+              this.setError('服务器无响应');
+            } else {
+              this.setError('生成changeFreeTime请求时发生异常');
+            }
             this.loadingAdd = false;
           });
       }
