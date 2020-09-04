@@ -411,12 +411,12 @@ export default Vue.extend({
     unixToString(num: number) {
       return moment.unix(num).format('M月D日 kk:mm');
     },
-    onAddNewInterview() {
+    async onAddNewInterview() {
       if ((this.$refs.form as any).validate()) {
         this.loadingAdd = true;
         const momentStart = moment(`${this.date}T${this.newStartTime}:00`);
         const momentEnd = moment(`${this.date}T${this.newEndTime}:00`);
-        axios.post(`${API_URL}/interview`,
+        await axios.post(`${API_URL}/interview`,
           {
             hr: this.getUser.id,
             interviewer: this.interviewers.find(
@@ -442,6 +442,24 @@ export default Vue.extend({
               this.setError('Error: 生成请求时发生异常');
             }
             this.loadingAdd = false;
+          });
+        // 刷新展示的面试列表
+        await axios.get(`${API_URL}/interview`,
+          {
+            headers: { 'X-Token': this.getUser.token },
+          })
+          .then((response) => {
+            this.interviews = response.data.filter(
+              (interview: any) => interview.hr === this.getUser.id,
+            );
+          }).catch((error) => {
+            if (error.response) {
+              this.setError(`Error: ${error.response.status.toString()} ${error.response.statusText} 刷新面试列表失败`);
+            } else if (error.request) {
+              this.setError('Error: 刷新面试列表失败，服务器无响应');
+            } else {
+              this.setError('Error: 刷新面试列表失败，生成请求时发生异常');
+            }
           });
       }
     },
