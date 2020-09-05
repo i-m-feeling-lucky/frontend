@@ -40,7 +40,7 @@ export default Vue.extend({
       search: '',
       headers: [
         { text: 'id', value: 'id' },
-        { text: 'email', value: 'email' },
+        { text: '电子邮箱', value: 'email' },
       ],
       HRs: [{}],
     };

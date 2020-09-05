@@ -39,9 +39,9 @@ export default Vue.extend({
 
       search: '',
       headers: [
-        { text: 'email', value: 'email' },
-        { text: 'name', value: 'name' },
-        { text: 'application result', value: 'application_result' },
+        { text: '电子邮箱', value: 'email' },
+        { text: '姓名', value: 'name' },
+        { text: '面试结果', value: 'application_result' },
       ],
       interviewees: [{}],
     };
@@ -58,7 +58,12 @@ export default Vue.extend({
         headers: { 'X-Token': this.getUser.token },
       })
       .then((response) => {
-        this.interviewees = response.data;
+        this.interviewees = response.data.map((data: any) => ({
+          email: data.email,
+          name: data.name,
+          // eslint-disable-next-line
+          application_result: data.application_result === 1 ? '通过' : '不通过',
+        }));
       }).catch((error) => {
         if (error.response) {
           this.setError(`Error: ${error.response.status.toString()} ${error.response.statusText}`);
