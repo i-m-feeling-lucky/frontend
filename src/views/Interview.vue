@@ -445,6 +445,8 @@ int main() {
         // eslint-disable-next-line @typescript-eslint/camelcase
         start_time: 0, // UTC timestamp
         length: 30, // minutes
+        // eslint-disable-next-line @typescript-eslint/camelcase
+        actual_length: 0, // seconds
         status: 'unknown',
       },
       statusMap: {
@@ -867,7 +869,7 @@ int main() {
     },
     initializeReplay() {
       this.setInfo('你是 HR，正在观看回放中');
-      this.replayProgress.total = this.interviewInfo.length * 60;
+      this.replayProgress.total = this.interviewInfo.actual_length;
       window.addEventListener('keydown', (e) => {
         if (e.code === 'ControlLeft' || e.code === 'ControlRight') {
           this.isCtrlPressed = true;
