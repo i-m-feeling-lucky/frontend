@@ -229,7 +229,7 @@
         </div>
       </v-overlay>
       <v-overlay :value="notStartedOverlay" z-index="20" opacity="0.7">
-        <div class="text-h3 font-weight-bold">
+        <div class="text-h4 font-weight-bold">
           面试将于 {{ new Date(interviewInfo.start_time * 1000).toLocaleString("zh-cn") }} 开始，请耐心等待
         </div>
       </v-overlay>
@@ -754,6 +754,10 @@ int main() {
           lang: this.code.data.lang,
           code: this.code.data.text,
           input: this.code.data.input,
+          // eslint-disable-next-line @typescript-eslint/camelcase
+          time_limit: this.code.data.timeLimit,
+          // eslint-disable-next-line @typescript-eslint/camelcase
+          memory_limit: this.code.data.memoryLimit,
         })
         .then((response: any) => {
           this.code.data.output = `[${response.data.message}]\n${response.data.result}`;
