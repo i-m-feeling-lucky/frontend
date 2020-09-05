@@ -92,7 +92,6 @@ export default Vue.extend({
     ...mapMutations(['setError', 'setSuccess']),
     onSearchAssign() {
       if ((this.$refs.form as any).validate()) {
-        this.loadingAdd = true;
         axios.get(`${API_URL}/user/${this.selectedHRid}/assignment`,
           {
             headers: { 'X-Token': this.getUser.token },
@@ -113,7 +112,6 @@ export default Vue.extend({
             } else {
               this.setError('Error: 生成请求时发生异常');
             }
-            this.loadingAdd = false;
           });
       }
     },
