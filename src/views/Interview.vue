@@ -312,37 +312,37 @@ export default Vue.extend({
       supportedTimeLimits: [
         {
           text: '10ms',
-          value: '10',
+          value: 10,
         },
         {
           text: '100ms',
-          value: '100',
+          value: 100,
         },
         {
           text: '1000ms',
-          value: '1000',
+          value: 1000,
         },
       ],
       supportedMemoryLimits: [
         {
           text: '100KB',
-          value: '100',
+          value: 100,
         },
         {
           text: '1MB',
-          value: '1000',
+          value: 1000,
         },
         {
           text: '10MB',
-          value: '10000',
+          value: 10000,
         },
       ],
       code: {
         time: Date.now(),
         data: {
           lang: 'c',
-          timeLimit: '100',
-          memoryLimit: '100',
+          timeLimit: 100,
+          memoryLimit: 100,
           input: '',
           output: '',
           text: `// A weird HelloWorld in C
