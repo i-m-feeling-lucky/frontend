@@ -462,12 +462,15 @@ int main() {
         total: 30 * 60,
       },
       progressTimeoutID: 0,
+      currentProgressTimeoutID: 0,
       isCtrlPressed: false,
       replayData: {
         chat: [],
         whiteboard: [],
         code: [],
       },
+
+      currentVideoIndex: -1,
     };
   },
   computed: {
@@ -870,6 +873,9 @@ int main() {
     initializeReplay() {
       this.setInfo('你是 HR，正在观看回放中');
       this.replayProgress.total = this.interviewInfo.actual_length;
+      window.setInterval(() => {
+        this.currentVideoIndex = Math.floor(this.replayProgress.current / 10);
+      }, 100);
       window.addEventListener('keydown', (e) => {
         if (e.code === 'ControlLeft' || e.code === 'ControlRight') {
           this.isCtrlPressed = true;
@@ -904,7 +910,7 @@ int main() {
           this.progressOverlay = false;
         }
       });
-      window.setInterval(() => {
+      this.currentProgressTimeoutID = window.setInterval(() => {
         this.replayProgress.current = Math.min(
           this.replayProgress.total,
           this.replayProgress.current + 0.5,
@@ -1030,6 +1036,11 @@ int main() {
           this.initializeInterview();
           if (this.roleString === 'interviewer') {
             this.initializeTimeoutAlert();
+          }
+          if (this.roleString !== 'HR') {
+            window.setInterval(() => {
+              this.currentVideoIndex = Math.floor((Math.floor(Date.now() / 1000) - this.interviewInfo.start_time) / 10);
+            }, 100);
           }
         } else if (this.interviewInfo.status === 'ended') {
           if (this.roleString === 'HR') {
@@ -1166,6 +1177,112 @@ int main() {
       }
       if (replayIndex.code in this.replayData.code) {
         this.code = this.replayData.code[replayIndex.code];
+      }
+    },
+    currentVideoIndex(index) {
+      console.log(index);
+      window.clearTimeout(this.currentProgressTimeoutID);
+      if (this.interviewInfo.status === 'ended') {
+        // replay mode
+        const promises = ['interviewer', 'interviewee'].map((source) => {
+          const videoContainer = document.getElementById(`video-container-${source}`)!;
+          let video = videoContainer.children[0] as HTMLVideoElement;
+          if (video === undefined) {
+            video = document.createElement('video');
+            videoContainer.appendChild(video);
+          }
+          return axios
+            .get(
+              `${API_URL}/interview/${this.id}/history/video/${source}/${index}`,
+              {
+                headers: {
+                  'X-Token': this.token,
+                },
+                responseType: 'blob',
+              },
+            ).then((response) => {
+              video.src = window.URL.createObjectURL(new Blob([response.data]));
+              video.play();
+              // video.currentTime = 5;
+            })
+            .catch((error) => {
+              if (error.response.status !== 404) {
+                if (error.response && error.response.data.message) {
+                  this.setError(error.response.data.message);
+                } else {
+                  this.setError(error.message);
+                }
+              }
+            });
+        });
+        Promise.allSettled(promises).then(() => {
+          this.currentProgressTimeoutID = window.setInterval(() => {
+            this.replayProgress.current = Math.min(
+              this.replayProgress.total,
+              this.replayProgress.current + 0.5,
+            );
+          }, 500);
+        });
+      } else {
+        // in interview, recording
+        // https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API/Recording_a_media_element
+        const wait = (delayInMS: number) => new Promise((resolve) => setTimeout(resolve, delayInMS));
+        const startRecording = (stream: any, lengthInMS: number) => {
+        // TODO too ugly
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore-enable
+          const recorder = new MediaRecorder(stream);
+          const data: any = [];
+
+          recorder.ondataavailable = (event: any) => data.push(event.data);
+          recorder.start();
+
+          const stopped = new Promise((resolve, reject) => {
+            recorder.onstop = resolve;
+            recorder.onerror = (event: any) => reject(event.name);
+          });
+
+          const recorded = wait(lengthInMS).then(
+            () => recorder.state === 'recording' && recorder.stop(),
+          );
+
+          return Promise.all([
+            stopped,
+            recorded,
+          ])
+            .then(() => data);
+        };
+        const video = document.getElementById(`video-container-${this.roleString}`)!.children[0];
+        if (video === undefined) {
+          return;
+        }
+        startRecording((video as any).captureStream(), 10 * 1000)
+          .then((recordedChunks) => {
+            const recordedBlob = new Blob(recordedChunks, { type: 'video/webm' });
+            const data = new FormData();
+            data.append('file', recordedBlob);
+            axios
+              .post(
+                `${API_URL}/interview/${this.id}/history/video/${this.roleString}/${index}`,
+                data,
+                {
+                  headers: {
+                    'X-Token': this.token,
+                    'Content-Type': 'multipart/form-data',
+                  },
+                },
+              )
+              .catch((error) => {
+                if (error.response && error.response.data.message) {
+                  this.setError(error.response.data.message);
+                } else {
+                  this.setError(error.message);
+                }
+              });
+          })
+          .catch((error) => {
+            this.setError(error.message);
+          });
       }
     },
   },
