@@ -22,8 +22,8 @@
         <v-card-title>HR分配关系</v-card-title>
           <v-form v-model="valid" ref="form">
             <v-select
-              v-model="selectedHRid"
-              :items="HRids"
+              v-model="selectedHREmail"
+              :items="HREmails"
               label="HR"
               prepend-icon="mdi-account-tie"
             ></v-select>
@@ -78,8 +78,9 @@ export default Vue.extend({
         { text: '姓名', value: 'name' },
         { text: '面试结果', value: 'application_result' },
       ],
-      HRs: [{}],
-      HRids: [] as number[],
+      HRs: [] as any[],
+      HREmails: [] as string[],
+      selectedHREmail: '',
       selectedHRid: '',
       HRsAssignInterviewers: [{}],
       HRsAssignInterviewees: [{}],
@@ -92,6 +93,9 @@ export default Vue.extend({
     ...mapMutations(['setError', 'setSuccess']),
     onSearchAssign() {
       if ((this.$refs.form as any).validate()) {
+        this.selectedHRid = this.HRs.find(
+          (hr: any) => hr.email === this.selectedHREmail,
+        ).id;
         axios.get(`${API_URL}/user/${this.selectedHRid}/assignment`,
           {
             headers: { 'X-Token': this.getUser.token },
@@ -125,10 +129,9 @@ export default Vue.extend({
         this.HRs = response.data.filter(
           (user: any) => user.role === 1,
         );
-        this.HRids = this.HRs.map(
-          (HR: any) => HR.id,
+        this.HREmails = this.HRs.map(
+          (HR: any) => HR.email,
         );
-        console.log(this.selectedHRid);
       }).catch((error) => {
         if (error.response) {
           this.setError(`Error: ${error.response.status.toString()} ${error.response.statusText}`);
