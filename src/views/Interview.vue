@@ -16,7 +16,7 @@
                     :items="supportedTimeLimits"
                     label="时间限制"
                     :dense="true"
-                    :readonly="roleString == 'interviewee' || inReplayMode"
+                    :readonly="roleString == 'interviewee' || roleString === 'HR'"
                   ></v-select>
                 </v-col>
                 <v-col>
@@ -25,7 +25,7 @@
                     :items="supportedMemoryLimits"
                     label="内存限制"
                     :dense="true"
-                    :readonly="roleString == 'interviewee' || inReplayMode"
+                    :readonly="roleString == 'interviewee' || roleString === 'HR'"
                   ></v-select>
                 </v-col>
                 <v-col>
@@ -34,11 +34,11 @@
                     :items="supportedLangs"
                     label="语言"
                     :dense="true"
-                    :readonly="inReplayMode"
+                    :readonly="roleString === 'HR'"
                   ></v-select>
                 </v-col>
                 <v-col>
-                  <v-btn @click="runCode" :disabled="inReplayMode">运行</v-btn>
+                  <v-btn @click="runCode" :disabled="roleString === 'HR'">运行</v-btn>
                 </v-col>
               </v-row>
               <v-row class="ml-2 mr-0">
@@ -49,7 +49,7 @@
                     :filled="true"
                     rows="3"
                     v-model="code.data.input"
-                    :readonly="inReplayMode"
+                    :readonly="roleString === 'HR'"
                   ></v-textarea>
                 </v-col>
                 <v-col>
@@ -66,7 +66,7 @@
             </gl-component>
 
             <gl-component>
-              <DrawingBoard v-model="drawing.data" :readonly="inReplayMode" />
+              <DrawingBoard v-model="drawing.data" :readonly="roleString === 'HR'" />
             </gl-component>
           </gl-col>
           <gl-col>
@@ -217,7 +217,7 @@
           small
           color="green"
           @click.stop="replayHelpDialog = true"
-          v-if="inReplayMode"
+          v-if="roleString === 'HR' && interviewInfo.status === 'ended'"
         >
           <v-icon>mdi-help-circle-outline</v-icon>
         </v-btn>
@@ -229,7 +229,7 @@
         </div>
       </v-overlay>
       <v-overlay :value="notStartedOverlay" z-index="20" opacity="0.7">
-        <div class="text-h3 font-weight-bold">
+        <div class="text-h4 font-weight-bold">
           面试将于 {{ new Date(interviewInfo.start_time * 1000).toLocaleString("zh-cn") }} 开始，请耐心等待
         </div>
       </v-overlay>
@@ -472,9 +472,6 @@ int main() {
     ...mapGetters(['getError', 'getInfo']),
     roleString(): string {
       return roleMap[this.role];
-    },
-    inReplayMode(): boolean {
-      return this.roleString === 'HR' && this.interviewInfo.status === 'ended';
     },
   },
   methods: {
@@ -754,6 +751,10 @@ int main() {
           lang: this.code.data.lang,
           code: this.code.data.text,
           input: this.code.data.input,
+          // eslint-disable-next-line @typescript-eslint/camelcase
+          time_limit: this.code.data.timeLimit,
+          // eslint-disable-next-line @typescript-eslint/camelcase
+          memory_limit: this.code.data.memoryLimit,
         })
         .then((response: any) => {
           this.code.data.output = `[${response.data.message}]\n${response.data.result}`;
@@ -852,6 +853,17 @@ int main() {
         return timeString.substr(14, 5);
       }
       return timeString.substr(11, 8);
+    },
+    initializeTimeoutAlert() {
+      const scheduledEndTime = this.interviewInfo.start_time + this.interviewInfo.length * 60;
+      let alreadyAlerted = false;
+      window.setInterval(() => {
+        const currentTime = Math.floor(Date.now() / 1000);
+        if (currentTime > scheduledEndTime && !alreadyAlerted) {
+          this.setInfo('面试已到预定时间，请尽快结束面试');
+          alreadyAlerted = true;
+        }
+      }, 1000);
     },
     initializeReplay() {
       this.setInfo('你是 HR，正在观看回放中');
@@ -1014,6 +1026,9 @@ int main() {
         } else if (this.interviewInfo.status === 'active') {
           this.resumeInterview();
           this.initializeInterview();
+          if (this.roleString === 'interviewer') {
+            this.initializeTimeoutAlert();
+          }
         } else if (this.interviewInfo.status === 'ended') {
           if (this.roleString === 'HR') {
             this.cmOptions.readOnly = true;
@@ -1036,7 +1051,7 @@ int main() {
     'code.data': {
       deep: true, // true since code contains many things
       handler() {
-        if (this.inReplayMode) {
+        if (this.roleString === 'HR') {
           return;
         }
         if (this.connection === null) {
@@ -1081,7 +1096,7 @@ int main() {
       }
     },
     'drawing.data': function () {
-      if (this.inReplayMode) {
+      if (this.roleString === 'HR') {
         return;
       }
       if (this.connection === null) {
